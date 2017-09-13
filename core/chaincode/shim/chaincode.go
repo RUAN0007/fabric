@@ -19,11 +19,13 @@ limitations under the License.
 package shim
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 	"unicode/utf8"
 
@@ -67,6 +69,16 @@ type ChaincodeStub struct {
 	creator   []byte
 	transient map[string][]byte
 	binding   []byte
+
+	// the previous reading keys
+	pre_reads []string
+}
+
+type ProvenanceMeta struct {
+	TxID      string
+	dep_reads []string
+	txn_time  timestamp.Timestamp
+	func_name string
 }
 
 // Peer address derived from command line or env var
@@ -78,6 +90,27 @@ type peerStreamGetter func(name string) (PeerChaincodeStream, error)
 
 //UTs to setup mock peer stream getter
 var streamGetter peerStreamGetter
+
+func MyCaller() string {
+
+	// we get the callers as uintptrs - but we just need 1
+	fpcs := make([]uintptr, 1)
+
+	// skip 3 levels to get to the caller of whoever called Caller()
+	n := runtime.Callers(3, fpcs)
+	if n == 0 {
+		return "n/a" // proper error her would be better
+	}
+
+	// get the info of the actual function that's in the pointer
+	fun := runtime.FuncForPC(fpcs[0] - 1)
+	if fun == nil {
+		return "n/a"
+	}
+
+	// return its name
+	return fun.Name()
+}
 
 //the non-mock user CC stream establishment func
 func userChaincodeStreamGetter(name string) (PeerChaincodeStream, error) {
@@ -335,6 +368,9 @@ func (stub *ChaincodeStub) init(handler *Handler, txid string, input *pb.Chainco
 	stub.handler = handler
 	stub.signedProposal = signedProposal
 
+	stub.pre_reads = []string{}
+	fmt.Println("Clear the pre_reads: ", stub.pre_reads)
+
 	// TODO: sanity check: verify that every call to init with a nil
 	// signedProposal is a legitimate one, meaning it is an internal call
 	// to system chaincodes.
@@ -384,6 +420,16 @@ func (stub *ChaincodeStub) InvokeChaincode(chaincodeName string, args [][]byte, 
 
 // GetState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
+	var exists bool = false
+	for _, pre_read := range stub.pre_reads {
+		if key == pre_read {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		stub.pre_reads = append(stub.pre_reads, key)
+	}
 	return stub.handler.handleGetState(key, stub.TxID)
 }
 
@@ -391,6 +437,29 @@ func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
 func (stub *ChaincodeStub) PutState(key string, value []byte) error {
 	if key == "" {
 		return fmt.Errorf("key must not be an empty string")
+	}
+
+	txID := stub.GetTxID()
+	cur_time, err := stub.GetTxTimestamp()
+
+	if err != nil {
+		fmt.Errorf("Error here")
+	}
+
+	prov_meta := ProvenanceMeta{TxID: txID,
+		dep_reads: stub.pre_reads,
+		txn_time:  *cur_time,
+		func_name: MyCaller()}
+
+	prov_json, err := json.Marshal(&prov_meta)
+
+	if err != nil {
+		fmt.Errorf("Error at marshallin provenance record")
+	}
+
+	err = stub.handler.handlePutState(key+"_prov", prov_json, stub.TxID)
+	if err != nil {
+		fmt.Errorf("Error at putting provenance records")
 	}
 	return stub.handler.handlePutState(key, value, stub.TxID)
 }
