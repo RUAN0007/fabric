@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime"
 	"strings"
 	"unicode/utf8"
 
@@ -71,7 +70,8 @@ type ChaincodeStub struct {
 	binding   []byte
 
 	// the previous reading keys
-	pre_reads []string
+	prov_capture bool
+	pre_reads    []string
 }
 
 type ProvenanceMeta struct {
@@ -79,6 +79,7 @@ type ProvenanceMeta struct {
 	dep_reads []string
 	txn_time  timestamp.Timestamp
 	func_name string
+	args      []string
 }
 
 // Peer address derived from command line or env var
@@ -90,27 +91,6 @@ type peerStreamGetter func(name string) (PeerChaincodeStream, error)
 
 //UTs to setup mock peer stream getter
 var streamGetter peerStreamGetter
-
-func MyCaller() string {
-
-	// we get the callers as uintptrs - but we just need 1
-	fpcs := make([]uintptr, 1)
-
-	// skip 3 levels to get to the caller of whoever called Caller()
-	n := runtime.Callers(3, fpcs)
-	if n == 0 {
-		return "n/a" // proper error her would be better
-	}
-
-	// get the info of the actual function that's in the pointer
-	fun := runtime.FuncForPC(fpcs[0] - 1)
-	if fun == nil {
-		return "n/a"
-	}
-
-	// return its name
-	return fun.Name()
-}
 
 //the non-mock user CC stream establishment func
 func userChaincodeStreamGetter(name string) (PeerChaincodeStream, error) {
@@ -361,15 +341,19 @@ func chatWithPeer(chaincodename string, stream PeerChaincodeStream, cc Chaincode
 
 // -- init stub ---
 // ChaincodeInvocation functionality
+func (stub *ChaincodeStub) enable_provenance() {
+	stub.prov_capture = true
+	stub.pre_reads = []string{}
+	fmt.Println("Start to capture provenance. Clear the pre_reads: ", stub.pre_reads)
+}
 
 func (stub *ChaincodeStub) init(handler *Handler, txid string, input *pb.ChaincodeInput, signedProposal *pb.SignedProposal) error {
 	stub.TxID = txid
 	stub.args = input.Args
 	stub.handler = handler
 	stub.signedProposal = signedProposal
-
+	stub.prov_capture = false
 	stub.pre_reads = []string{}
-	fmt.Println("Clear the pre_reads: ", stub.pre_reads)
 
 	// TODO: sanity check: verify that every call to init with a nil
 	// signedProposal is a legitimate one, meaning it is an internal call
@@ -420,46 +404,53 @@ func (stub *ChaincodeStub) InvokeChaincode(chaincodeName string, args [][]byte, 
 
 // GetState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
-	var exists bool = false
-	for _, pre_read := range stub.pre_reads {
-		if key == pre_read {
-			exists = true
-			break
+	if stub.prov_capture {
+		var exists bool = false
+		for _, pre_read := range stub.pre_reads {
+			if key == pre_read {
+				exists = true
+				break
+			}
 		}
-	}
-	if !exists {
-		stub.pre_reads = append(stub.pre_reads, key)
+		if !exists {
+			stub.pre_reads = append(stub.pre_reads, key)
+		}
 	}
 	return stub.handler.handleGetState(key, stub.TxID)
 }
 
 // PutState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) PutState(key string, value []byte) error {
-	if key == "" {
-		return fmt.Errorf("key must not be an empty string")
-	}
+	if stub.prov_capture {
+		if key == "" {
+			return fmt.Errorf("key must not be an empty string")
+		}
 
-	txID := stub.GetTxID()
-	cur_time, err := stub.GetTxTimestamp()
+		txID := stub.GetTxID()
+		cur_time, err := stub.GetTxTimestamp()
 
-	if err != nil {
-		fmt.Errorf("Error here")
-	}
+		if err != nil {
+			fmt.Errorf("Error here")
+		}
 
-	prov_meta := ProvenanceMeta{TxID: txID,
-		dep_reads: stub.pre_reads,
-		txn_time:  *cur_time,
-		func_name: MyCaller()}
+		fn, fn_args := stub.GetFunctionAndParameters()
 
-	prov_json, err := json.Marshal(&prov_meta)
+		prov_meta := ProvenanceMeta{TxID: txID,
+			dep_reads: stub.pre_reads,
+			txn_time:  *cur_time,
+			func_name: fn,
+			args:      fn_args}
 
-	if err != nil {
-		fmt.Errorf("Error at marshallin provenance record")
-	}
+		prov_json, err := json.Marshal(&prov_meta)
 
-	err = stub.handler.handlePutState(key+"_prov", prov_json, stub.TxID)
-	if err != nil {
-		fmt.Errorf("Error at putting provenance records")
+		if err != nil {
+			fmt.Errorf("Error at marshallin provenance record")
+		}
+
+		err = stub.handler.handlePutState(key+"_prov", prov_json, stub.TxID)
+		if err != nil {
+			fmt.Errorf("Error at putting provenance records")
+		}
 	}
 	return stub.handler.handlePutState(key, value, stub.TxID)
 }
