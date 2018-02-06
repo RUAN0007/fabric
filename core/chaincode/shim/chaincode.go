@@ -19,6 +19,7 @@ limitations under the License.
 package shim
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -46,6 +47,7 @@ import (
 var chaincodeLogger = logging.MustGetLogger("shim")
 var logOutput = os.Stderr
 
+
 const (
 	minUnicodeRuneValue   = 0            //U+0000
 	maxUnicodeRuneValue   = utf8.MaxRune //U+10FFFF - maximum (and unallocated) code point
@@ -67,6 +69,14 @@ type ChaincodeStub struct {
 	creator   []byte
 	transient map[string][]byte
 	binding   []byte
+
+	prov_capture bool
+	pre_reads    []string
+}
+
+type ProvenanceMeta struct {
+	TxID      string
+	DepReads []string
 }
 
 // Peer address derived from command line or env var
@@ -328,12 +338,19 @@ func chatWithPeer(chaincodename string, stream PeerChaincodeStream, cc Chaincode
 
 // -- init stub ---
 // ChaincodeInvocation functionality
+func (stub *ChaincodeStub) enable_provenance() {
+	stub.prov_capture = true
+	stub.pre_reads = []string{}
+	chaincodeLogger.Debug("Enabling the provenance capturing. Clear the pre_reads")
+}
 
 func (stub *ChaincodeStub) init(handler *Handler, txid string, input *pb.ChaincodeInput, signedProposal *pb.SignedProposal) error {
 	stub.TxID = txid
 	stub.args = input.Args
 	stub.handler = handler
 	stub.signedProposal = signedProposal
+	stub.pre_reads = []string{}
+	chaincodeLogger.Debug("Init the chaincode. Clear the pre_reads")
 
 	// TODO: sanity check: verify that every call to init with a nil
 	// signedProposal is a legitimate one, meaning it is an internal call
@@ -384,6 +401,17 @@ func (stub *ChaincodeStub) InvokeChaincode(chaincodeName string, args [][]byte, 
 
 // GetState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
+	if stub.prov_capture {
+		var exists bool = false
+		for _, pre_read := range stub.pre_reads {
+			if key == pre_read {
+				break
+			}  // end if
+		}  // end for
+		if !exists {
+			stub.pre_reads = append(stub.pre_reads, key)
+		}  // end if
+	}  // end if
 	return stub.handler.handleGetState(key, stub.TxID)
 }
 
@@ -392,6 +420,29 @@ func (stub *ChaincodeStub) PutState(key string, value []byte) error {
 	if key == "" {
 		return fmt.Errorf("key must not be an empty string")
 	}
+
+	if stub.prov_capture {
+		if key == "" {
+			return fmt.Errorf("key must not be an empty string")
+		}
+
+		txID := stub.GetTxID()
+
+		prov_meta := ProvenanceMeta{TxID: txID,
+			DepReads: stub.pre_reads}
+
+		prov_json, err := json.Marshal(&prov_meta)
+
+		if err != nil {
+			fmt.Errorf("Error at marshalling provenance record")
+		}
+
+		err = stub.handler.handlePutState(key+"_prov", prov_json, stub.TxID)
+		if err != nil {
+			fmt.Errorf("Error at putting provenance records")
+		}
+	}
+
 	return stub.handler.handlePutState(key, value, stub.TxID)
 }
 
