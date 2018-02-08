@@ -407,6 +407,7 @@ func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
 		var exists bool = false
 		for _, pre_read := range stub.pre_reads {
 			if key == pre_read {
+				exists = true
 				break
 			}  // end if
 		}  // end for
