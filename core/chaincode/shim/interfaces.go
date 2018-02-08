@@ -40,6 +40,8 @@ type Chaincode interface {
 // ChaincodeStubInterface is used by deployable chaincode apps to access and
 // modify their ledgers
 type ChaincodeStubInterface interface {
+
+  EnableProvenance()
 	// GetArgs returns the arguments intended for the chaincode Init and Invoke
 	// as an array of byte arrays.
 	GetArgs() [][]byte

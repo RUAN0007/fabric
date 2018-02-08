@@ -83,6 +83,9 @@ func (stub *MockStub) GetStringArgs() []string {
 	return strargs
 }
 
+func (stub *MockStub) EnableProvenance() {
+}
+
 func (stub *MockStub) GetFunctionAndParameters() (function string, params []string) {
 	allargs := stub.GetStringArgs()
 	function = ""

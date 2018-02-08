@@ -77,6 +77,7 @@ type ChaincodeStub struct {
 type ProvenanceMeta struct {
   TxID      string
   DepReads []string
+  Val string
 }
 
 // Peer address derived from command line or env var
@@ -431,7 +432,7 @@ func (stub *ChaincodeStub) PutState(key string, value []byte) error {
 		txID := stub.GetTxID()
 
 		prov_meta := ProvenanceMeta{TxID: txID,
-			DepReads: stub.pre_reads}
+			DepReads: stub.pre_reads, Val: string(value)}
 
 		prov_json, err := json.Marshal(&prov_meta)
 
