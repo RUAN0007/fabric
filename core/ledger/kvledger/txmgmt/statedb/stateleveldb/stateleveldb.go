@@ -26,6 +26,12 @@ import (
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/version"
 	"github.com/hyperledger/fabric/core/ledger/ledgerconfig"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
+  // "github.com/hyperledger/fabric/core/chaincode/shim"
+
+  // "strings"
+  // pc "provchain"
+ // "fmt"
+  // "encoding/json"
 )
 
 var logger = flogging.MustGetLogger("stateleveldb")
@@ -139,11 +145,45 @@ func (vdb *versionedDB) ApplyUpdates(batch *statedb.UpdateBatch, height *version
 		for k, vv := range updates {
 			compositeKey := constructCompositeKey(ns, k)
 			logger.Debugf("Channel [%s]: Applying key=[%#v]", vdb.dbName, compositeKey)
-
 			if vv.Value == nil {
 				dbBatch.Delete(compositeKey)
 			} else {
 				dbBatch.Put(compositeKey, statedb.EncodeValue(vv.Value, vv.Version))
+			// =====================================================
+		  // For Prov Chain
+
+			  // if strings.HasSuffix(k, "_prov") {
+			  // 	orig_key := k[0: len(k)-5]
+			  // 	logger.Debugf("Handle Provenance for Key %s for ns %s.", 
+			  // 		orig_key, ns)
+
+	    //     prov_chain := pc.NewProvChain()
+				 //  compositeStrKey := string(compositeKey)
+				 //  blk_idx :=  vv.Version.BlockNum
+					// if !prov_chain.PutState(compositeStrKey, blk_idx, string(vv.Value), false) { 
+					// 	fmt.Errorf("Fail to put state on provchain")
+					// }
+
+				 //  prov_meta := &shim.ProvenanceMeta{}
+				 //  logger.Debugf("Unmarshal provenance record: %s", string(vv.Value))
+				 //  err := json.Unmarshal([]byte(vv.Value), prov_meta) 
+				 //  if err != nil {
+				 //    fmt.Errorf("Error at unmarshalling provenance record %s", 
+				 //    	          string(vv.Value))
+				 //  }
+				 //  logger.Debugf("Txn = %s. ", prov_meta.TxID)
+
+				 //  dep_reads := pc.NewStringVector()
+				 //  for i := 0; i < len(prov_meta.DepReads); i++ {
+				 //    logger.Debugf("DepReads[%d] = %s", i, prov_meta.DepReads[i]) 
+				 //    dep_reads.Add(prov_meta.DepReads[i])
+				 //  }
+
+				 //  if !prov_chain.LinkState(compositeStrKey, blk_idx, dep_reads, prov_meta.TxID) {
+					// 	fmt.Errorf("Fail to Link state on provchain")
+				 //  }
+			  // } 
+			// =====================================================
 			}
 		}
 	}

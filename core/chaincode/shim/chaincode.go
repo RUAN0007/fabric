@@ -72,11 +72,11 @@ type ChaincodeStub struct {
 
 	prov_capture bool
 	pre_reads    []string
-}
+} 
 
 type ProvenanceMeta struct {
-	TxID      string
-	DepReads []string
+  TxID      string
+  DepReads []string
 }
 
 // Peer address derived from command line or env var
@@ -338,7 +338,7 @@ func chatWithPeer(chaincodename string, stream PeerChaincodeStream, cc Chaincode
 
 // -- init stub ---
 // ChaincodeInvocation functionality
-func (stub *ChaincodeStub) enable_provenance() {
+func (stub *ChaincodeStub) EnableProvenance() {
 	stub.prov_capture = true
 	stub.pre_reads = []string{}
 	chaincodeLogger.Debug("Enabling the provenance capturing. Clear the pre_reads")
@@ -401,7 +401,8 @@ func (stub *ChaincodeStub) InvokeChaincode(chaincodeName string, args [][]byte, 
 
 // GetState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
-	if stub.prov_capture {
+	val, err := stub.handler.handleGetState(key, stub.TxID)
+	if err != nil && stub.prov_capture {
 		var exists bool = false
 		for _, pre_read := range stub.pre_reads {
 			if key == pre_read {
@@ -411,8 +412,9 @@ func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
 		if !exists {
 			stub.pre_reads = append(stub.pre_reads, key)
 		}  // end if
-	}  // end if
-	return stub.handler.handleGetState(key, stub.TxID)
+	}
+
+	return val, err
 }
 
 // PutState documentation can be found in interfaces.go
