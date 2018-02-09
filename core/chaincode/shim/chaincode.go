@@ -342,7 +342,7 @@ func chatWithPeer(chaincodename string, stream PeerChaincodeStream, cc Chaincode
 func (stub *ChaincodeStub) EnableProvenance() {
 	stub.prov_capture = true
 	stub.pre_reads = []string{}
-	chaincodeLogger.Debug("Enabling the provenance capturing. Clear the pre_reads")
+	chaincodeLogger.Debug("Enabling the provenance capturing. Clear the DepRead")
 }
 
 func (stub *ChaincodeStub) init(handler *Handler, txid string, input *pb.ChaincodeInput, signedProposal *pb.SignedProposal) error {
@@ -351,7 +351,7 @@ func (stub *ChaincodeStub) init(handler *Handler, txid string, input *pb.Chainco
 	stub.handler = handler
 	stub.signedProposal = signedProposal
 	stub.pre_reads = []string{}
-	chaincodeLogger.Debug("Init the chaincode. Clear the pre_reads")
+	chaincodeLogger.Debug("Init the chaincode. Clear the Stub Pre-reads")
 
 	// TODO: sanity check: verify that every call to init with a nil
 	// signedProposal is a legitimate one, meaning it is an internal call
@@ -402,16 +402,27 @@ func (stub *ChaincodeStub) InvokeChaincode(chaincodeName string, args [][]byte, 
 
 // GetState documentation can be found in interfaces.go
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
+
 	val, err := stub.handler.handleGetState(key, stub.TxID)
-	if err != nil && stub.prov_capture {
+	chaincodeLogger.Debugf("Get State For Key %s. ", key)
+	chaincodeLogger.Debugf("stub.prov_capture %d ", stub.prov_capture)
+	chaincodeLogger.Debugf("No Error: %d ", (err == nil))
+	chaincodeLogger.Debugf("Is nil Val: %d ", (val == nil))
+	chaincodeLogger.Debugf("Val: %s ", val)
+
+	if val != nil && err == nil && stub.prov_capture {
+	  chaincodeLogger.Debug("Prepare appending. ")
 		var exists bool = false
-		for _, pre_read := range stub.pre_reads {
+		for i, pre_read := range stub.pre_reads {
+	    chaincodeLogger.Debugf("pre_read[%d] = %s ", i, pre_read)
 			if key == pre_read {
+	      chaincodeLogger.Debugf("Exists")
 				exists = true
 				break
 			}  // end if
 		}  // end for
 		if !exists {
+	    chaincodeLogger.Debugf("Append for pre_read = %s ", key)
 			stub.pre_reads = append(stub.pre_reads, key)
 		}  // end if
 	}
@@ -425,15 +436,16 @@ func (stub *ChaincodeStub) PutState(key string, value []byte) error {
 		return fmt.Errorf("key must not be an empty string")
 	}
 
+	chaincodeLogger.Debugf("PutState: stub.prov_capture %d ", stub.prov_capture)
 	if stub.prov_capture {
-		if key == "" {
-			return fmt.Errorf("key must not be an empty string")
-		}
-
 		txID := stub.GetTxID()
 
 		prov_meta := ProvenanceMeta{TxID: txID,
 			DepReads: stub.pre_reads, Val: string(value)}
+
+		for i, pre_read := range prov_meta.DepReads {
+	    chaincodeLogger.Debugf("pre_read[%d] = %s ", i, pre_read)
+		}  // end for
 
 		prov_json, err := json.Marshal(&prov_meta)
 
