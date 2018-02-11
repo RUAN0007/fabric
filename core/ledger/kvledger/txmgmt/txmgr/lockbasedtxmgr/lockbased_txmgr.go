@@ -26,6 +26,12 @@ import (
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/validator/statebasedval"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/version"
 	"github.com/hyperledger/fabric/protos/common"
+  "github.com/hyperledger/fabric/core/chaincode/shim"
+
+  pc "provchain"
+  "errors"
+  "strings"
+  "encoding/json"
 )
 
 var logger = flogging.MustGetLogger("lockbasedtxmgr")
@@ -35,6 +41,7 @@ var logger = flogging.MustGetLogger("lockbasedtxmgr")
 type LockBasedTxMgr struct {
 	db           statedb.VersionedDB
 	validator    validator.Validator
+	provchain    pc.ProvChain
 	batch        *statedb.UpdateBatch
 	currentBlock *common.Block
 	commitRWLock sync.RWMutex
@@ -43,7 +50,7 @@ type LockBasedTxMgr struct {
 // NewLockBasedTxMgr constructs a new instance of NewLockBasedTxMgr
 func NewLockBasedTxMgr(db statedb.VersionedDB) *LockBasedTxMgr {
 	db.Open()
-	return &LockBasedTxMgr{db: db, validator: statebasedval.NewValidator(db)}
+	return &LockBasedTxMgr{db: db, validator: statebasedval.NewValidator(db), provchain: pc.NewProvChain()}
 }
 
 // GetLastSavepoint returns the block num recorded in savepoint,
@@ -99,6 +106,59 @@ func (txmgr *LockBasedTxMgr) Commit() error {
 		return err
 	}
 	logger.Debugf("Updates committed to state database")
+
+	if err := txmgr.CommitProvchain(txmgr.batch); err != nil {
+		return err
+	}
+
+	logger.Debugf("Updates committed to provchain")
+	return nil
+}
+
+func (txmgr *LockBasedTxMgr) CommitProvchain(batch *statedb.UpdateBatch) error {
+	namespaces := batch.GetUpdatedNamespaces()
+	for _, ns := range namespaces {
+		updates := batch.GetUpdates(ns)
+		for k, vv := range updates {
+		  if strings.HasSuffix(k, "_prov") {
+		  	orig_key := k[0: len(k)-5]
+		  	logger.Debugf("Handle Provenance for Key %s for ns %s.", 
+		  		orig_key, ns)
+
+		    compositeStrKey := ns + "_" + orig_key
+			  blk_idx :=  vv.Version.BlockNum
+
+			  prov_meta := &shim.ProvenanceMeta{}
+			  logger.Debugf("Unmarshal provenance record: %s", string(vv.Value))
+			  err := json.Unmarshal([]byte(vv.Value), prov_meta) 
+			  if err != nil {
+			    logger.Warningf("Error at unmarshalling provenance record %s", 
+			    	          string(vv.Value))
+			    return err
+			  }
+			  logger.Debugf("CompositeStrKey = %s. ", compositeStrKey)
+			  logger.Debugf("Txn = %s. ", prov_meta.TxID)
+			  logger.Debugf("Val = %s", prov_meta.Val)
+			  logger.Debugf("Blk_Idx = %s", blk_idx)
+
+			  dep_reads := pc.NewStringVector()
+			  for i := 0; i < len(prov_meta.DepReads); i++ {
+			    var dep_read string; 
+			    dep_read = ns + "_" + prov_meta.DepReads[i]
+			    dep_reads.Add(dep_read)
+			    logger.Debugf("DepReads[%d] = %s", i, dep_read) 
+			  }
+
+				if !txmgr.provchain.PutState(compositeStrKey, blk_idx, prov_meta.Val, false) { 
+					return errors.New("Fail to put state on provchain")
+				}
+
+			  if !txmgr.provchain.LinkState(compositeStrKey, blk_idx, dep_reads, prov_meta.TxID) {
+					return errors.New("Fail to Link state on provchain")
+			  }
+		  } 
+	  }
+	}
 	return nil
 }
 
