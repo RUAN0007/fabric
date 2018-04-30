@@ -20,13 +20,13 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/buckettree"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/raw"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/trie"
 	"github.com/op/go-logging"
-	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 )
 
 var logger = logging.MustGetLogger("state")
@@ -54,16 +54,16 @@ type State struct {
 	txStateDeltaHash      map[string][]byte
 	updateStateImpl       bool
 	historyStateDeltaSize uint64
-  db                    *db.OpenchainDB
-  recomputeHash         bool
-  lastComputedHash      []byte
-  ccids                 map[string]bool   // set of chaincodeID
+	db                    *db.OpenchainDB
+	recomputeHash         bool
+	lastComputedHash      []byte
+	ccids                 map[string]bool // set of chaincodeID
 }
 
 // NewState constructs a new State. This Initializes encapsulated state implementation
 func NewState() *State {
 	initConfig()
-	logger.Infof("Initializing state implementation [%s]", stateImplName)
+	logger.Infof("                                          Initializing state implementation [%s]", stateImplName)
 	switch stateImplName {
 	case buckettreeType:
 		stateImpl = buckettree.NewStateImpl()
@@ -119,7 +119,7 @@ func (state *State) txInProgress() bool {
 // pulls from db. If committed is true, this pulls from the db only.
 func (state *State) Get(chaincodeID string, key string, committed bool) ([]byte, error) {
 	if !committed {
-    panic("Not in a tx")
+		panic("Not in a tx")
 		valueHolder := state.currentTxStateDelta.Get(chaincodeID, key)
 		if valueHolder != nil {
 			return valueHolder.GetValue(), nil
@@ -129,21 +129,21 @@ func (state *State) Get(chaincodeID string, key string, committed bool) ([]byte,
 			return valueHolder.GetValue(), nil
 		}
 	}
-  k := statemgmt.ConstructCompositeKey(chaincodeID, key)
-  //k := []byte(key)
-  ver, err := state.db.GetMap([]byte(chaincodeID), k)
-  if err != nil {
-    return nil, err
-  }
+	k := statemgmt.ConstructCompositeKey(chaincodeID, key)
+	//k := []byte(key)
+	ver, err := state.db.GetMap([]byte(chaincodeID), k)
+	if err != nil {
+		return nil, err
+	}
 
-  return state.db.GetBlob(k, ver)
+	return state.db.GetBlob(k, ver)
 	//return state.stateImpl.Get(chaincodeID, key)
 }
 
 // GetRangeScanIterator returns an iterator to get all the keys (and values) between startKey and endKey
 // (assuming lexical order of the keys) for a chaincodeID.
 func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, endKey string, committed bool) (statemgmt.RangeScanIterator, error) {
-  panic("GetRangeScanIterator not implemented")
+	panic("GetRangeScanIterator not implemented")
 	stateImplItr, err := state.stateImpl.GetRangeScanIterator(chaincodeID, startKey, endKey)
 	if err != nil {
 		return nil, err
@@ -165,22 +165,22 @@ func (state *State) Set(chaincodeID string, key string, value []byte) error {
 		panic("State can be changed only in context of a tx.")
 	}
 
-  /*
-	// Check if a previous value is already set in the state delta
-	if state.currentTxStateDelta.IsUpdatedValueSet(chaincodeID, key) {
-		// No need to bother looking up the previous value as we will not
-		// set it again. Just pass nil
-		state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
-	} else {
-		// Need to lookup the previous value
-		previousValue, err := state.Get(chaincodeID, key, true)
-		if err != nil {
-			return err
+	/*
+		// Check if a previous value is already set in the state delta
+		if state.currentTxStateDelta.IsUpdatedValueSet(chaincodeID, key) {
+			// No need to bother looking up the previous value as we will not
+			// set it again. Just pass nil
+			state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
+		} else {
+			// Need to lookup the previous value
+			previousValue, err := state.Get(chaincodeID, key, true)
+			if err != nil {
+				return err
+			}
+			state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
 		}
-		state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
-	}
-  */
-  state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
+	*/
+	state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
 	return nil
 }
 
@@ -210,7 +210,7 @@ func (state *State) Delete(chaincodeID string, key string) error {
 
 // CopyState copies all the key-values from sourceChaincodeID to destChaincodeID
 func (state *State) CopyState(sourceChaincodeID string, destChaincodeID string) error {
-  panic("CopyState not implemented")
+	panic("CopyState not implemented")
 	itr, err := state.GetRangeScanIterator(sourceChaincodeID, "", "", true)
 	defer itr.Close()
 	if err != nil {
@@ -228,7 +228,7 @@ func (state *State) CopyState(sourceChaincodeID string, destChaincodeID string) 
 
 // GetMultipleKeys returns the values for the multiple keys.
 func (state *State) GetMultipleKeys(chaincodeID string, keys []string, committed bool) ([][]byte, error) {
-  panic("GetMultipleKeys not implemented")
+	panic("GetMultipleKeys not implemented")
 	var values [][]byte
 	for _, k := range keys {
 		v, err := state.Get(chaincodeID, k, committed)
@@ -242,7 +242,7 @@ func (state *State) GetMultipleKeys(chaincodeID string, keys []string, committed
 
 // SetMultipleKeys sets the values for the multiple keys.
 func (state *State) SetMultipleKeys(chaincodeID string, kvs map[string][]byte) error {
-  panic("SetMultipleKeys not implemented")
+	panic("SetMultipleKeys not implemented")
 	for k, v := range kvs {
 		err := state.Set(chaincodeID, k, v)
 		if err != nil {
@@ -253,27 +253,27 @@ func (state *State) SetMultipleKeys(chaincodeID string, kvs map[string][]byte) e
 }
 
 func (state *State) GetUStoreHash() ([]byte, error) {
-  if state.recomputeHash {
-    ccIds := state.stateDelta.GetUpdatedChaincodeIds(true)
-    for _,id := range(ccIds) {
-      db.GetDBHandle().DB.StartMapBatch(id)
-      kvs := state.stateDelta.GetUpdates(id)
-      for key, val := range(kvs) {
-        // persit to Blob first
-        k := statemgmt.ConstructCompositeKey(id, key)
-        //k := []byte(key)
-        version, _ := state.db.PutBlob(k, val.Value)
-        state.db.PutMap(k, version)
-      }
-      state.db.SyncMap()
-    }
-    state.lastComputedHash, _ = state.db.WriteMap()
-    state.recomputeHash = false
-    logger.Infof("1st compute crypto hash, value: %v", state.lastComputedHash)
-  } else {
-    logger.Infof("Recomputed crypto hash, value: %v", state.lastComputedHash)
-  }
-  return state.lastComputedHash, nil
+	if state.recomputeHash {
+		ccIds := state.stateDelta.GetUpdatedChaincodeIds(true)
+		for _, id := range ccIds {
+			db.GetDBHandle().DB.StartMapBatch(id)
+			kvs := state.stateDelta.GetUpdates(id)
+			for key, val := range kvs {
+				// persit to Blob first
+				k := statemgmt.ConstructCompositeKey(id, key)
+				//k := []byte(key)
+				version, _ := state.db.PutBlob(k, val.Value)
+				state.db.PutMap(k, version)
+			}
+			state.db.SyncMap()
+		}
+		state.lastComputedHash, _ = state.db.WriteMap()
+		state.recomputeHash = false
+		logger.Infof("1st compute crypto hash, value: %v", state.lastComputedHash)
+	} else {
+		logger.Infof("Recomputed crypto hash, value: %v", state.lastComputedHash)
+	}
+	return state.lastComputedHash, nil
 }
 
 // GetHash computes new state hash if the stateDelta is to be applied.
@@ -295,12 +295,12 @@ func (state *State) GetHash() ([]byte, error) {
 
 // GetTxStateDeltaHash return the hash of the StateDelta
 func (state *State) GetTxStateDeltaHash() map[string][]byte {
-  panic("GetTxStateDeltaHash not implemented")
+	panic("GetTxStateDeltaHash not implemented")
 	return state.txStateDeltaHash
 }
 
 func (state *State) PrepareToCommit() {
-  state.recomputeHash = true
+	state.recomputeHash = true
 }
 
 // ClearInMemoryChanges remove from memory all the changes to state
@@ -308,25 +308,25 @@ func (state *State) ClearInMemoryChanges(changesPersisted bool) {
 	state.stateDelta = statemgmt.NewStateDelta()
 	state.txStateDeltaHash = make(map[string][]byte)
 	state.stateImpl.ClearWorkingSet(changesPersisted)
-  state.recomputeHash = false
+	state.recomputeHash = false
 }
 
 // getStateDelta get changes in state after most recent call to method clearInMemoryChanges
 func (state *State) getStateDelta() *statemgmt.StateDelta {
-  panic("getStateDelta not implemented")
+	panic("getStateDelta not implemented")
 	return state.stateDelta
 }
 
 // GetSnapshot returns a snapshot of the global state for the current block. stateSnapshot.Release()
 // must be called once you are done.
 func (state *State) GetSnapshot(blockNumber uint64, dbSnapshot *gorocksdb.Snapshot) (*StateSnapshot, error) {
-  panic("GetSnapshot not implemented")
+	panic("GetSnapshot not implemented")
 	return newStateSnapshot(blockNumber, dbSnapshot)
 }
 
 // FetchStateDeltaFromDB fetches the StateDelta corrsponding to given blockNumber
 func (state *State) FetchStateDeltaFromDB(blockNumber uint64) (*statemgmt.StateDelta, error) {
-  panic("FetchStateDelta not implemented")
+	panic("FetchStateDelta not implemented")
 	stateDeltaBytes, err := db.GetDBHandle().GetFromStateDeltaCF(encodeStateDeltaKey(blockNumber))
 	if err != nil {
 		return nil, err
@@ -367,7 +367,7 @@ func (state *State) AddChangesForPersistence(blockNumber uint64, writeBatch *gor
 // This is an in memory change only. state.CommitStateDelta must be used to
 // commit the state to the DB. This method is to be used in state transfer.
 func (state *State) ApplyStateDelta(delta *statemgmt.StateDelta) {
-  panic("ApplyStateDelta not implemented")
+	panic("ApplyStateDelta not implemented")
 	state.stateDelta = delta
 	state.updateStateImpl = true
 }
@@ -375,7 +375,7 @@ func (state *State) ApplyStateDelta(delta *statemgmt.StateDelta) {
 // CommitStateDelta commits the changes from state.ApplyStateDelta to the
 // DB.
 func (state *State) CommitStateDelta() error {
-  panic("CommitStateDelta not implemented")
+	panic("CommitStateDelta not implemented")
 	if state.updateStateImpl {
 		state.stateImpl.PrepareWorkingSet(state.stateDelta)
 		state.updateStateImpl = false

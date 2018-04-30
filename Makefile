@@ -1,3 +1,20 @@
+# To build
+# Configure UStore HOME directory, relevant header and library search path as follows on bashrc.
+# export USTORE_HOME='/home/ruanpingcheng/Desktop/Proj/USTORE-1'
+
+# search path for headers
+# export CPLUS_INCLUDE_PATH='$CPLUS_INCLUDE_PATH:/home/ruanpingcheng/Desktop/Proj/USTORE-1/include:/home/ruanpingcheng/Desktop/Proj/USTORE-1/go/kvdb/include:/home/ruanpingcheng/Desktop/Proj/USTORE-1/build/include'
+
+# search path for linking dynamic libraries for building
+# export LIBRARY_PATH='/home/ruanpingcheng/Desktop/Proj/USTORE-1/build/lib:$LIBRARY_PATH'
+
+# search path for loading libraries for execution
+# export LD_LIBRARY_PATH='/home/ruanpingcheng/Desktop/Proj/USTORE-1/build/lib:$LD_LIBRARY_PATH'
+
+# Link with boost and ustore_kv at Line 72
+# make peer
+
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -51,7 +68,9 @@ DOCKER_TAG=$(shell uname -m)-$(PROJECT_VERSION)
 
 PKGNAME = github.com/$(PROJECT_NAME)
 GO_LDFLAGS = -X github.com/hyperledger/fabric/metadata.Version=$(PROJECT_VERSION)
-CGO_FLAGS = CGO_CFLAGS=" " CGO_LDFLAGS="-lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
+
+#Add ustore_kv and boost here
+CGO_FLAGS = CGO_CFLAGS=" " CGO_LDFLAGS="-lustore_kv -lboost_system -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
 UID = $(shell id -u)
 CHAINTOOL_RELEASE=v0.9.1
 

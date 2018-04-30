@@ -8,7 +8,7 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
-// source: /data/dinhtta/src/github.com/hyperledger/fabric/ustore/ustore.i
+// source: /home/ruanpingcheng/Desktop/gopath/src/ustore/ustore.i
 
 package ustore
 
