@@ -158,6 +158,8 @@ type ChaincodeStubInterface interface {
 
 	// SetEvent saves the event to be sent when a transaction is made part of a block
 	SetEvent(name string, payload []byte) error
+
+	RegisterDepFunc(func_name string, func_dep func(string, []string) []string) error
 }
 
 // StateRangeQueryIteratorInterface allows a chaincode to iterate over a range of

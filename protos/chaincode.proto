@@ -160,6 +160,7 @@ message ChaincodeMessage {
 message PutStateInfo {
     string key = 1;
     bytes value = 2;
+    repeated string deps = 3;
 }
 
 message RangeQueryState {

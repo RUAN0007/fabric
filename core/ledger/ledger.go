@@ -21,20 +21,20 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
-  "time"
+	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
-  "github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/state"
+	"github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/events/producer"
 	"github.com/op/go-logging"
-	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 
 	"github.com/hyperledger/fabric/protos"
+	"github.com/spf13/viper"
 	"golang.org/x/net/context"
-  "github.com/spf13/viper"
 )
 
 var ledgerLogger = logging.MustGetLogger("ledger")
@@ -82,36 +82,37 @@ var (
 
 // Ledger - the struct for openchain ledger
 type Ledger struct {
-	blockchain *blockchain
-	state      *state.State
-	currentID  interface{}
-  statUtil  *util.StatUtil
-  nReads    uint64  // number of read
-  nWrites   uint64  // number of write
-  totalReadTime uint64  // read time
-  totalWriteTime  uint64  // write time
+	blockchain     *blockchain
+	state          *state.State
+	currentID      interface{}
+	statUtil       *util.StatUtil
+	nReads         uint64 // number of read
+	nWrites        uint64 // number of write
+	totalReadTime  uint64 // read time
+	totalWriteTime uint64 // write time
 }
 
 var ledger *Ledger
 var ledgerError error
 var once sync.Once
 var stateKey = "s"
+
 // GetLedger - gives a reference to a 'singleton' ledger
 func GetLedger() (*Ledger, error) {
 	once.Do(func() {
 		ledger, ledgerError = GetNewLedger()
-    config := viper.New()
-    config.SetEnvPrefix("ledger") // variable is LEDGER_SAMPLE_INTERNVAL
-    config.AutomaticEnv()
-    sampleInterval := config.GetInt("sample_interval")
-    ledgerLogger.Infof("Sample interval : %v", sampleInterval)
-    ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
-    ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
-    ledger.nReads = 0
-    ledger.nWrites = 0
-    ledger.totalReadTime = 0
-    ledger.totalWriteTime = 0
-    db.GetDBHandle().DB.InitMap(stateKey)
+		config := viper.New()
+		config.SetEnvPrefix("ledger") // variable is LEDGER_SAMPLE_INTERNVAL
+		config.AutomaticEnv()
+		sampleInterval := config.GetInt("sample_interval")
+		ledgerLogger.Infof("Sample interval : %v", sampleInterval)
+		ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
+		ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
+		ledger.nReads = 0
+		ledger.nWrites = 0
+		ledger.totalReadTime = 0
+		ledger.totalWriteTime = 0
+		db.GetDBHandle().DB.InitMap(stateKey)
 	})
 	return ledger, ledgerError
 }
@@ -130,8 +131,8 @@ func GetNewLedger() (*Ledger, error) {
 // Stat collection, querying via OpenChain REST API
 // Return (#reads, #writes, read time, write time)
 func (ledger *Ledger) GetDBStats() (uint64, uint64, uint64, uint64, uint64) {
-  dbsize := db.GetDBHandle().DB.GetSize()
-  return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
+	dbsize := db.GetDBHandle().DB.GetSize()
+	return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
 }
 
 /////////////////// Transaction-batch related methods ///////////////////////////////
@@ -147,7 +148,6 @@ func (ledger *Ledger) BeginTxBatch(id interface{}) error {
 	return nil
 }
 
-
 // GetTXBatchPreviewBlockInfo returns a preview block info that will
 // contain the same information as GetBlockchainInfo will return after
 // ledger.CommitTxBatch is called with the same parameters. If the
@@ -155,7 +155,7 @@ func (ledger *Ledger) BeginTxBatch(id interface{}) error {
 // contained hash will be different.
 func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	transactions []*protos.Transaction, metadata []byte) (*protos.BlockchainInfo, error) {
-    panic("Not implemented...")
+	panic("Not implemented...")
 	err := ledger.checkValidIDCommitORRollback(id)
 	if err != nil {
 		return nil, err
@@ -179,8 +179,8 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 
 	//stateHash, err := ledger.state.GetHash()
-  ledger.state.PrepareToCommit()
-  stateHash, err := ledger.state.GetUStoreHash()
+	ledger.state.PrepareToCommit()
+	stateHash, err := ledger.state.GetUStoreHash()
 	if err != nil {
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
@@ -216,18 +216,18 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	block.NonHashData = &protos.NonHashData{ChaincodeEvents: ccEvents}
 	newBlockNumber, err := ledger.blockchain.addPersistenceChangesForNewBlock(context.TODO(), block, stateHash, writeBatch)
 	if err != nil {
-    panic("Something wrong during commit...")
+		panic("Something wrong during commit...")
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
 		return err
 	}
-  
+
 	//ledger.state.AddChangesForPersistence(newBlockNumber, writeBatch)
 	opt := gorocksdb.NewDefaultWriteOptions()
 	defer opt.Destroy()
 	dbErr := db.GetDBHandle().DB.Write(opt, writeBatch)
 	if dbErr != nil {
-    panic("Something wrong during commit ...")
+		panic("Something wrong during commit ...")
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
 		return dbErr
@@ -244,14 +244,14 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	if len(transactionResults) != 0 {
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
-  ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 	return nil
 }
 
 // RollbackTxBatch - Discards all the state changes that may have taken place during the execution of
 // current transaction-batch
 func (ledger *Ledger) RollbackTxBatch(id interface{}) error {
-  panic("Rollback not implemented")
+	panic("Rollback not implemented")
 	ledgerLogger.Debugf("RollbackTxBatch for id = [%s]", id)
 	err := ledger.checkValidIDCommitORRollback(id)
 	if err != nil {
@@ -278,15 +278,15 @@ func (ledger *Ledger) TxFinished(txID string, txSuccessful bool) {
 // GetTempStateHash - Computes state hash by taking into account the state changes that may have taken
 // place during the execution of current transaction-batch
 func (ledger *Ledger) GetTempStateHash() ([]byte, error) {
-  return ledger.state.GetUStoreHash()
-  //return nil, nil
+	return ledger.state.GetUStoreHash()
+	//return nil, nil
 }
 
 // GetTempStateHashWithTxDeltaStateHashes - In addition to the state hash (as defined in method GetTempStateHash),
 // this method returns a map [txUuid of Tx --> cryptoHash(stateChangesMadeByTx)]
 // Only successful txs appear in this map
 func (ledger *Ledger) GetTempStateHashWithTxDeltaStateHashes() ([]byte, map[string][]byte, error) {
-  panic("GetTempStateHashWithTxDeltaStateHashes not implemented")
+	panic("GetTempStateHashWithTxDeltaStateHashes not implemented")
 	stateHash, err := ledger.state.GetHash()
 	return stateHash, ledger.state.GetTxStateDeltaHash(), err
 }
@@ -294,14 +294,14 @@ func (ledger *Ledger) GetTempStateHashWithTxDeltaStateHashes() ([]byte, map[stri
 // GetState get state for chaincodeID and key. If committed is false, this first looks in memory
 // and if missing, pulls from db.  If committed is true, this pulls from the db only.
 func (ledger *Ledger) GetState(chaincodeID string, key string, committed bool) ([]byte, error) {
-  ledger.statUtil.Stats["ledgerget"].Start(key)
-  ledger.nReads++
-  startTime := time.Now()
-  res, err := ledger.state.Get(chaincodeID, key, committed)
-  ledger.totalReadTime += uint64(time.Since(startTime))
-  if val, ok := ledger.statUtil.Stats["ledgerget"].End(key); ok {
-    ledgerLogger.Infof("GetState latency: %v", val)
-  }
+	ledger.statUtil.Stats["ledgerget"].Start(key)
+	ledger.nReads++
+	startTime := time.Now()
+	res, err := ledger.state.Get(chaincodeID, key, committed)
+	ledger.totalReadTime += uint64(time.Since(startTime))
+	if val, ok := ledger.statUtil.Stats["ledgerget"].End(key); ok {
+		ledgerLogger.Infof("GetState latency: %v", val)
+	}
 	return res, err
 }
 
@@ -311,24 +311,24 @@ func (ledger *Ledger) GetState(chaincodeID string, key string, committed bool) (
 // are mergerd with the results in memory (giving preference to in-memory data)
 // The key-values in the returned iterator are not guaranteed to be in any specific order
 func (ledger *Ledger) GetStateRangeScanIterator(chaincodeID string, startKey string, endKey string, committed bool) (statemgmt.RangeScanIterator, error) {
-  panic("GetStateRangeScane not implemented")
+	panic("GetStateRangeScane not implemented")
 	return ledger.state.GetRangeScanIterator(chaincodeID, startKey, endKey, committed)
 }
 
 // SetState sets state to given value for chaincodeID and key. Does not immideatly writes to DB
-func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte) error {
+func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, deps []string) error {
 	if key == "" || value == nil {
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
 	}
-  ledger.statUtil.Stats["ledgerput"].Start(key)
-  ledger.nWrites++
-  startTime := time.Now()
-  res := ledger.state.Set(chaincodeID, key, value)
-  ledger.totalWriteTime += uint64(time.Since(startTime))
-  if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
-    ledgerLogger.Infof("PutState latency: %v", val)
-  }
+	ledger.statUtil.Stats["ledgerput"].Start(key)
+	ledger.nWrites++
+	startTime := time.Now()
+	res := ledger.state.Set(chaincodeID, key, value, deps)
+	ledger.totalWriteTime += uint64(time.Since(startTime))
+	if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
+		ledgerLogger.Infof("PutState latency: %v", val)
+	}
 	return res
 }
 
@@ -339,21 +339,21 @@ func (ledger *Ledger) DeleteState(chaincodeID string, key string) error {
 
 // CopyState copies all the key-values from sourceChaincodeID to destChaincodeID
 func (ledger *Ledger) CopyState(sourceChaincodeID string, destChaincodeID string) error {
-  panic("CopyState not impelemnted")
+	panic("CopyState not impelemnted")
 	return ledger.state.CopyState(sourceChaincodeID, destChaincodeID)
 }
 
 // GetStateMultipleKeys returns the values for the multiple keys.
 // This method is mainly to amortize the cost of grpc communication between chaincode shim peer
 func (ledger *Ledger) GetStateMultipleKeys(chaincodeID string, keys []string, committed bool) ([][]byte, error) {
-  panic("GetStateMultipleKey not implemented!")
+	panic("GetStateMultipleKey not implemented!")
 	return ledger.state.GetMultipleKeys(chaincodeID, keys, committed)
 }
 
 // SetStateMultipleKeys sets the values for the multiple keys.
 // This method is mainly to amortize the cost of grpc communication between chaincode shim peer
 func (ledger *Ledger) SetStateMultipleKeys(chaincodeID string, kvs map[string][]byte) error {
-  panic("SetStateMultipleKeys not implemented!")
+	panic("SetStateMultipleKeys not implemented!")
 	return ledger.state.SetMultipleKeys(chaincodeID, kvs)
 }
 
@@ -361,7 +361,7 @@ func (ledger *Ledger) SetStateMultipleKeys(chaincodeID string, kvs map[string][]
 // should be used when transferring the state from one peer to another peer. You must call
 // stateSnapshot.Release() once you are done with the snapshot to free up resources.
 func (ledger *Ledger) GetStateSnapshot() (*state.StateSnapshot, error) {
-  panic("GetStateSnapshot not implemented")
+	panic("GetStateSnapshot not implemented")
 	dbSnapshot := db.GetDBHandle().GetSnapshot()
 	blockHeight, err := fetchBlockchainSizeFromSnapshot(dbSnapshot)
 	if err != nil {
@@ -378,7 +378,7 @@ func (ledger *Ledger) GetStateSnapshot() (*state.StateSnapshot, error) {
 // GetStateDelta will return the state delta for the specified block if
 // available.  If not available because it has been discarded, returns nil,nil.
 func (ledger *Ledger) GetStateDelta(blockNumber uint64) (*statemgmt.StateDelta, error) {
-  panic("GetStateDelta not implemented")
+	panic("GetStateDelta not implemented")
 	if blockNumber >= ledger.GetBlockchainSize() {
 		return nil, ErrOutOfBounds
 	}
@@ -404,7 +404,7 @@ func (ledger *Ledger) GetStateDelta(blockNumber uint64) (*statemgmt.StateDelta, 
 // stateDelta.RollBackwards=false, the delta retrieved for block 3 can be
 // used to roll backwards from the state at block 3 to the state at block 2.
 func (ledger *Ledger) ApplyStateDelta(id interface{}, delta *statemgmt.StateDelta) error {
-  panic("ApplyStateDetla not implemented")
+	panic("ApplyStateDetla not implemented")
 	err := ledger.checkValidIDBegin()
 	if err != nil {
 		return err
@@ -417,7 +417,7 @@ func (ledger *Ledger) ApplyStateDelta(id interface{}, delta *statemgmt.StateDelt
 // CommitStateDelta will commit the state delta passed to ledger.ApplyStateDelta
 // to the DB
 func (ledger *Ledger) CommitStateDelta(id interface{}) error {
-  panic("CommitStateDelta not implemented")
+	panic("CommitStateDelta not implemented")
 	err := ledger.checkValidIDCommitORRollback(id)
 	if err != nil {
 		return err
@@ -429,7 +429,7 @@ func (ledger *Ledger) CommitStateDelta(id interface{}) error {
 // RollbackStateDelta will discard the state delta passed
 // to ledger.ApplyStateDelta
 func (ledger *Ledger) RollbackStateDelta(id interface{}) error {
-  panic("RollbackStateDelta not implemented")
+	panic("RollbackStateDelta not implemented")
 	err := ledger.checkValidIDCommitORRollback(id)
 	if err != nil {
 		return err
@@ -460,7 +460,7 @@ func (ledger *Ledger) GetBlockByNumber(blockNumber uint64) (*protos.Block, error
 	if blockNumber >= ledger.GetBlockchainSize() {
 		return nil, ErrOutOfBounds
 	}
-  return ledger.blockchain.getBlock(blockNumber)
+	return ledger.blockchain.getBlock(blockNumber)
 }
 
 // GetBlockchainSize returns number of blocks in blockchain
@@ -499,7 +499,7 @@ func (ledger *Ledger) PutRawBlock(block *protos.Block, blockNumber uint64) error
 // lowBlock is the low block in the chain to include in verification. If
 // you wish to verify the entire chain, use 0 for the genesis block.
 func (ledger *Ledger) VerifyChain(highBlock, lowBlock uint64) (uint64, error) {
-  panic("Not implemented")
+	panic("Not implemented")
 	if highBlock >= ledger.GetBlockchainSize() {
 		return highBlock, ErrOutOfBounds
 	}

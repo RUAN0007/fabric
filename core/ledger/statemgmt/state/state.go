@@ -159,8 +159,9 @@ func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, en
 }
 
 // Set sets state to given value for chaincodeID and key. Does not immediately writes to DB
-func (state *State) Set(chaincodeID string, key string, value []byte) error {
-	logger.Debugf("set() chaincodeID=[%s], key=[%s], value=[%#v]", chaincodeID, key, value)
+func (state *State) Set(chaincodeID string, key string, value []byte,
+	deps []string) error {
+	logger.Debugf("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%d]", chaincodeID, key, value, len(deps))
 	if !state.txInProgress() {
 		panic("State can be changed only in context of a tx.")
 	}
@@ -180,7 +181,7 @@ func (state *State) Set(chaincodeID string, key string, value []byte) error {
 			state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
 		}
 	*/
-	state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
+	state.currentTxStateDelta.Set(chaincodeID, key, value, nil, deps)
 	return nil
 }
 
@@ -217,8 +218,8 @@ func (state *State) CopyState(sourceChaincodeID string, destChaincodeID string) 
 		return err
 	}
 	for itr.Next() {
-		k, v := itr.GetKeyValue()
-		err := state.Set(destChaincodeID, k, v)
+		// k, v := itr.GetKeyValue()
+		// err := state.Set(destChaincodeID, k, v)
 		if err != nil {
 			return err
 		}
@@ -243,13 +244,13 @@ func (state *State) GetMultipleKeys(chaincodeID string, keys []string, committed
 // SetMultipleKeys sets the values for the multiple keys.
 func (state *State) SetMultipleKeys(chaincodeID string, kvs map[string][]byte) error {
 	panic("SetMultipleKeys not implemented")
-	for k, v := range kvs {
-		err := state.Set(chaincodeID, k, v)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	// for k, v := range kvs {
+	// 	err := state.Set(chaincodeID, k, v)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	// return nil
 }
 
 func (state *State) GetUStoreHash() ([]byte, error) {

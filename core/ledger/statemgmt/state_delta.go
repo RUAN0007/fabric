@@ -50,9 +50,9 @@ func (stateDelta *StateDelta) Get(chaincodeID string, key string) *UpdatedValue 
 }
 
 // Set sets state value for a key
-func (stateDelta *StateDelta) Set(chaincodeID string, key string, value, previousValue []byte) {
+func (stateDelta *StateDelta) Set(chaincodeID string, key string, value, previousValue []byte, deps []string) {
 	chaincodeStateDelta := stateDelta.getOrCreateChaincodeStateDelta(chaincodeID)
-	chaincodeStateDelta.set(key, value, previousValue)
+	chaincodeStateDelta.set(key, value, previousValue, deps)
 	return
 }
 
@@ -82,24 +82,28 @@ func (stateDelta *StateDelta) ApplyChanges(anotherStateDelta *StateDelta) {
 		existingChaincodeStateDelta, existingChaincode := stateDelta.ChaincodeStateDeltas[chaincodeID]
 		for key, valueHolder := range chaincodeStateDelta.UpdatedKVs {
 			var previousValue []byte
+			var previousDeps []string
 			if existingChaincode {
 				existingUpdateValue, existingUpdate := existingChaincodeStateDelta.UpdatedKVs[key]
 				if existingUpdate {
 					// The existing state delta already has an updated value for this key.
 					previousValue = existingUpdateValue.PreviousValue
+					previousDeps = existingUpdateValue.Deps
 				} else {
 					// Use the previous value set in the new state delta
 					previousValue = valueHolder.PreviousValue
+					previousDeps = valueHolder.Deps
 				}
 			} else {
 				// Use the previous value set in the new state delta
 				previousValue = valueHolder.PreviousValue
+				previousDeps = valueHolder.Deps
 			}
 
 			if valueHolder.IsDeleted() {
 				stateDelta.Delete(chaincodeID, key, previousValue)
 			} else {
-				stateDelta.Set(chaincodeID, key, valueHolder.Value, previousValue)
+				stateDelta.Set(chaincodeID, key, valueHolder.Value, previousValue, previousDeps)
 			}
 		}
 	}
@@ -183,15 +187,17 @@ func (chaincodeStateDelta *ChaincodeStateDelta) get(key string) *UpdatedValue {
 	return chaincodeStateDelta.UpdatedKVs[key]
 }
 
-func (chaincodeStateDelta *ChaincodeStateDelta) set(key string, updatedValue, previousValue []byte) {
+func (chaincodeStateDelta *ChaincodeStateDelta) set(key string, updatedValue,
+	previousValue []byte, deps []string) {
 	updatedKV, ok := chaincodeStateDelta.UpdatedKVs[key]
 	if ok {
 		// Key already exists, just set the updated value
-    updatedKV.PreviousValue = updatedKV.Value 
+		updatedKV.PreviousValue = updatedKV.Value
 		updatedKV.Value = updatedValue
+		updatedKV.Deps = deps
 	} else {
 		// New key. Create a new entry in the map
-		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{updatedValue, previousValue}
+		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{updatedValue, previousValue, deps}
 	}
 }
 
@@ -202,7 +208,7 @@ func (chaincodeStateDelta *ChaincodeStateDelta) remove(key string, previousValue
 		updatedKV.Value = nil
 	} else {
 		// New key. Create a new entry in the map
-		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{nil, previousValue}
+		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{nil, previousValue, nil}
 	}
 }
 
@@ -224,6 +230,7 @@ func (chaincodeStateDelta *ChaincodeStateDelta) getSortedKeys() []string {
 type UpdatedValue struct {
 	Value         []byte
 	PreviousValue []byte
+	Deps          []string
 }
 
 // IsDeleted checks whether the key was deleted
@@ -342,7 +349,7 @@ func (chaincodeStateDelta *ChaincodeStateDelta) unmarshal(buffer *proto.Buffer) 
 		if err != nil {
 			return fmt.Errorf("Error unmarshaling state delta : %s", err)
 		}
-		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{value, previousValue}
+		chaincodeStateDelta.UpdatedKVs[key] = &UpdatedValue{value, previousValue, nil}
 	}
 	return nil
 }

@@ -14,6 +14,8 @@
 # Link with boost and ustore_kv at Line 72
 # make peer
 
+# Copy the generated protoc-gen-go to $PATH before generating protobuf code
+
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file

@@ -1038,7 +1038,7 @@ func (handler *Handler) enterBusyState(e *fsm.Event, state string) {
 			// Encrypt the data if the confidential is enabled
 			if pVal, err = handler.encrypt(msg.Txid, putStateInfo.Value); err == nil {
 				// Invoke ledger to put state
-				err = ledgerObj.SetState(chaincodeID, putStateInfo.Key, pVal)
+				err = ledgerObj.SetState(chaincodeID, putStateInfo.Key, pVal, putStateInfo.Deps)
 			}
 		} else if msg.Type.String() == pb.ChaincodeMessage_DEL_STATE.String() {
 			// Invoke ledger to delete state
