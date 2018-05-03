@@ -21,10 +21,10 @@ import (
 	"encoding/binary"
 	"strconv"
 
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
 	"github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/protos"
-	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"golang.org/x/net/context"
 )
 
@@ -48,18 +48,18 @@ var indexBlockDataSynchronously = true
 var blockchainKey = []byte("blockchainKey")
 
 func newBlockchain() (*blockchain, error) {
-//	size, err := fetchBlockchainSizeFromDB()
-//	if err != nil {
-//		return nil, err
-//	}
-  var size uint64
-  var err error
-  size = 0
-  err = nil
+	//	size, err := fetchBlockchainSizeFromDB()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	var size uint64
+	var err error
+	size = 0
+	err = nil
 	blockchain := &blockchain{0, nil, nil, nil}
 	blockchain.size = size
 	if size > 0 {
-    panic("Not implemented")
+		panic("Not implemented")
 		previousBlock, err := fetchBlockFromDB(size - 1)
 		if err != nil {
 			return nil, err
@@ -109,22 +109,22 @@ func (blockchain *blockchain) getBlock(blockNumber uint64) (*protos.Block, error
 // getBlockByHash get block by block hash
 // in UStore, blockhash is the version
 func (blockchain *blockchain) getBlockByHash(blockHash []byte) (*protos.Block, error) {
-  blockBytes, err := db.GetDBHandle().GetBlob(blockchainKey, blockHash)
-  if err != nil {
-    return nil, err
-  }
-  return protos.UnmarshallBlock(blockBytes) 
-  /*
-	blockNumber, err := blockchain.indexer.fetchBlockNumberByBlockHash(blockHash)
+	blockBytes, err := db.GetDBHandle().GetBlock(blockchainKey, blockHash)
 	if err != nil {
 		return nil, err
 	}
-	return blockchain.getBlock(blockNumber)
-  */
+	return protos.UnmarshallBlock(blockBytes)
+	/*
+		blockNumber, err := blockchain.indexer.fetchBlockNumberByBlockHash(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		return blockchain.getBlock(blockNumber)
+	*/
 }
 
 func (blockchain *blockchain) getTransactionByID(txID string) (*protos.Transaction, error) {
-  panic("getTransactionByID not implemented")
+	panic("getTransactionByID not implemented")
 	blockNumber, txIndex, err := blockchain.indexer.fetchTransactionIndexByID(txID)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (blockchain *blockchain) getTransactionsByBlockHash(blockHash []byte) ([]*p
 
 // getTransaction get a transaction identified by block number and index within the block
 func (blockchain *blockchain) getTransaction(blockNumber uint64, txIndex uint64) (*protos.Transaction, error) {
-  panic("getTransaction not implemented")
+	panic("getTransaction not implemented")
 	block, err := blockchain.getBlock(blockNumber)
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (blockchain *blockchain) getTransaction(blockNumber uint64, txIndex uint64)
 
 // getTransactionByBlockHash get a transaction identified by block hash and index within the block
 func (blockchain *blockchain) getTransactionByBlockHash(blockHash []byte, txIndex uint64) (*protos.Transaction, error) {
-  panic("getTransactionByBlockHash not implemented")
+	panic("getTransactionByBlockHash not implemented")
 	block, err := blockchain.getBlockByHash(blockHash)
 	if err != nil {
 		return nil, err
@@ -215,22 +215,22 @@ func (blockchain *blockchain) addPersistenceChangesForNewBlock(ctx context.Conte
 		block.NonHashData.LocalLedgerCommitTimestamp = util.CreateUtcTimestamp()
 	}
 	blockNumber := blockchain.size
-  /*
-	blockHash, err := block.GetHash()
-	if err != nil {
-		return 0, err
-	}
-  */
+	/*
+		blockHash, err := block.GetHash()
+		if err != nil {
+			return 0, err
+		}
+	*/
 	blockBytes, blockBytesErr := block.Bytes()
 	if blockBytesErr != nil {
 		return 0, blockBytesErr
 	}
-  blockHash, err := db.GetDBHandle().PutBlob(blockchainKey, blockBytes)
-  if err != nil {
-    return 0, err
-  }
+	blockHash, err := db.GetDBHandle().PutBlock(blockchainKey, blockBytes)
+	if err != nil {
+		return 0, err
+	}
 	//writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockBytes)
-  writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockHash)
+	writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockHash)
 	writeBatch.PutCF(db.GetDBHandle().BlockchainCF, blockCountKey, encodeUint64(blockNumber+1))
 	if blockchain.indexer.isSynchronous() {
 		blockchain.indexer.createIndexes(block, blockNumber, blockHash, writeBatch)
@@ -254,7 +254,7 @@ func (blockchain *blockchain) blockPersistenceStatus(success bool) {
 }
 
 func (blockchain *blockchain) persistRawBlock(block *protos.Block, blockNumber uint64) error {
-  panic("persistRawBlock not implemented")
+	panic("persistRawBlock not implemented")
 	blockBytes, blockBytesErr := block.Bytes()
 	if blockBytesErr != nil {
 		return blockBytesErr
@@ -300,9 +300,9 @@ func fetchBlockFromDB(blockNumber uint64) (*protos.Block, error) {
 		return nil, nil
 	}
 
-  // then fetch from ustore
-  data, err := db.GetDBHandle().GetBlob(blockchainKey, blockBytes)
-  return protos.UnmarshallBlock(data)
+	// then fetch from ustore
+	data, err := db.GetDBHandle().GetBlock(blockchainKey, blockBytes)
+	return protos.UnmarshallBlock(data)
 	//return protos.UnmarshallBlock(blockBytes)
 }
 
@@ -319,7 +319,7 @@ func fetchBlockchainSizeFromDB() (uint64, error) {
 }
 
 func fetchBlockchainSizeFromSnapshot(snapshot *gorocksdb.Snapshot) (uint64, error) {
-  panic("fetchBlockchainSizeFromSnapshot not implemented")
+	panic("fetchBlockchainSizeFromSnapshot not implemented")
 	blockNumberBytes, err := db.GetDBHandle().GetFromBlockchainCFSnapshot(snapshot, blockCountKey)
 	if err != nil {
 		return 0, err

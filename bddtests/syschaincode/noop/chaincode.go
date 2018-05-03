@@ -57,6 +57,10 @@ func (t *SystemChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	return nil, nil
 }
 
+func (t *SystemChaincode) GetDepFunc(function string) func(string, []string) []string {
+	return nil
+}
+
 // Invoke runs an invocation on the system chaincode
 func (t *SystemChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	if len(args) != 0 || function == "" {

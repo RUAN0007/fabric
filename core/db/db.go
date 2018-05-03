@@ -23,9 +23,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
-	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 )
 
 var dbLogger = logging.MustGetLogger("db")
@@ -132,7 +132,7 @@ func (openchainDB *OpenchainDB) GetStateDeltaCFIterator() *gorocksdb.Iterator {
 // GetSnapshot returns a point-in-time view of the DB. You MUST call snapshot.Release()
 // when you are done with the snapshot.
 func (openchainDB *OpenchainDB) GetSnapshot() *gorocksdb.Snapshot {
-  panic("not implemented")
+	panic("not implemented")
 	return openchainDB.DB.NewSnapshot()
 }
 
@@ -189,11 +189,11 @@ func (openchainDB *OpenchainDB) open() {
 	opts.SetCreateIfMissing(missing)
 	opts.SetCreateIfMissingColumnFamilies(true)
 
-  dbtype := viper.GetString("peer.db.dbtype")
-  if dbtype == "ustore" {    
-    opts.SetDbType(dbtype)
-  }
-  dbLogger.Infof("dbType is: %v", dbtype)
+	dbtype := viper.GetString("peer.db.dbtype")
+	if dbtype == "ustore" {
+		opts.SetDbType(dbtype)
+	}
+	dbLogger.Infof("dbType is: %v", dbtype)
 	cfNames := []string{"default"}
 	cfNames = append(cfNames, columnfamilies...)
 	var cfOpts []*gorocksdb.Options
@@ -271,64 +271,49 @@ func (openchainDB *OpenchainDB) Get(cfHandler *gorocksdb.ColumnFamilyHandle, key
 	return data, nil
 }
 
-func (openchainDB *OpenchainDB) GetBlob(key, version []byte) ([]byte, error) {
-  slice, _:= openchainDB.DB.GetBlob(key, version)
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
+func (openchainDB *OpenchainDB) GetState(key []byte) ([]byte, error) {
+	slice, _ := openchainDB.DB.GetState(key)
+	defer slice.Free()
+	if slice.Data() == nil {
+		return nil, nil
+	}
+	data := makeCopy(slice.Data())
+	return data, nil
 }
 
-func (openchainDB *OpenchainDB) PutBlob(key, value []byte) ([]byte, error) {
-  slice, _ := openchainDB.DB.PutBlob(key, value)
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
+func (openchainDB *OpenchainDB) PutState(key, value []byte, txnID string, deps [][]byte) error {
+	openchainDB.DB.PutState(key, value, txnID, deps)
+	return nil
 }
 
-func (openchainDB *OpenchainDB) GetMap(ss ...[]byte) ([]byte, error) {
-  slice, _:= openchainDB.DB.GetMap(ss...)
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
+func (openchainDB *OpenchainDB) GetBlock(key, version []byte) ([]byte, error) {
+	slice, _ := openchainDB.DB.GetBlock(key, version)
+	defer slice.Free()
+	if slice.Data() == nil {
+		return nil, nil
+	}
+	data := makeCopy(slice.Data())
+	return data, nil
 }
 
-func (openchainDB *OpenchainDB) PutMap(key, value []byte) ([]byte, error) {
-  slice, _ := openchainDB.DB.PutMap(key, value)
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
+func (openchainDB *OpenchainDB) PutBlock(key, value []byte) ([]byte, error) {
+	slice, _ := openchainDB.DB.PutBlock(key, value)
+	defer slice.Free()
+	if slice.Data() == nil {
+		return nil, nil
+	}
+	data := makeCopy(slice.Data())
+	return data, nil
 }
 
-func (openchainDB *OpenchainDB) SyncMap() ([]byte, error) {
-  slice, _ := openchainDB.DB.SyncMap()
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
-}
-
-func (openchainDB *OpenchainDB) WriteMap() ([]byte, error) {
-  slice, _ := openchainDB.DB.WriteMap()
-  defer slice.Free()
-  if slice.Data() == nil {
-    return nil, nil
-  }
-  data := makeCopy(slice.Data())
-  return data, nil
+func (openchainDB *OpenchainDB) GlobalSnapshot() ([]byte, error) {
+	slice, _ := openchainDB.DB.GlobalSnapshot()
+	defer slice.Free()
+	if slice.Data() == nil {
+		return nil, nil
+	}
+	data := makeCopy(slice.Data())
+	return data, nil
 }
 
 // Put saves the key/value in the given column family

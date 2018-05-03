@@ -36,6 +36,8 @@ type Chaincode interface {
 	// Query is called for Query transactions. The chaincode may only read
 	// (but not modify) its state variables and return the result
 	Query(stub ChaincodeStubInterface, function string, args []string) ([]byte, error)
+
+	GetDepFunc(function string) func(string, []string) []string
 }
 
 // ChaincodeStubInterface is used by deployable chaincode apps to access and modify their ledgers
@@ -158,8 +160,6 @@ type ChaincodeStubInterface interface {
 
 	// SetEvent saves the event to be sent when a transaction is made part of a block
 	SetEvent(name string, payload []byte) error
-
-	RegisterDepFunc(func_name string, func_dep func(string, []string) []string) error
 }
 
 // StateRangeQueryIteratorInterface allows a chaincode to iterate over a range of

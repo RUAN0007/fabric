@@ -1,19 +1,22 @@
 %module ustore
+%include <std_map.i>
 %include <std_string.i>
 %include <std_pair.i>
+%include <std_vector.i>
 
 %{
 #include "db.h"
 %}
 
 %template(PairStatusString) std::pair<ustore_kvdb::Status, std::string>;
+%template(VecStr) std::vector<std::string>;
+%template(MapStr) std::map<std::string, std::string>;
+%template(PairStatusMapStr) std::pair<ustore_kvdb::Status, std::map<std::string, std::string>>;
 
 namespace ustore_kvdb {
-
 %nodefaultctor Iterator;
 class Iterator;
 
-class MapIterator;
 class KVDB {
  public:
   explicit KVDB(unsigned int id = 42, const std::string& cfname = "default");
@@ -24,34 +27,31 @@ class KVDB {
   Status Write(WriteBatch* updates);
   bool Exist(const std::string& key);
   Iterator* NewIterator();
-  MapIterator* NewMapIterator(const std::string& key, const std::string& version);
   size_t GetSize();
   std::string GetCFName();
-  Status InitMap(const std::string& mapkey);
-  Status StartMapBatch(const std::string& mapkey);
-  std::pair<Status, std::string> PutMap(const std::string& key, const std::string& value);
-  std::pair<Status, std::string> PutBlob(const std::string& key, const std::string& value);
-  std::pair<Status, std::string> GetMap(const std::string& mapkey, const std::string& key);
-  std::pair<Status, std::string> GetMap(const std::string& mapkey, const std::string& key, const std::string& version);
-  std::pair<Status, MapIterator*> GetMapIterator(const std::string& mapkey, const std::string& version);
-  std::pair<Status, std::string> GetPreviousVersion(const std::string& key, const std::string& version);
 
-  std::pair<Status, std::string> SyncMap();
-  std::pair<Status, std::string> WriteMap();
-  std::pair<Status, std::string> GetBlob(const std::string& key);
-  std::pair<Status, std::string> GetBlob(const std::string& key, const std::string& version);
-};
+  Status InitGlobalState();
+  std::pair<Status, std::string> Commit();
+  std::pair<Status, std::string> GetState(const std::string& key);
+  bool PutState(const std::string& key, const std::string& val,
+                const std::string& txnID, const std::vector<std::string>& deps);
+  std::pair<Status, std::string> GetBlock(const std::string& key, const std::string& version);
+  std::pair<Status, std::string> PutBlock(const std::string& key, const std::string& value);
 
-class MapIterator {
- public:
-  MapIterator();
-  MapIterator(ustore::ObjectDB *odb, const std::string& key, const std::string& version);
-  
-  void SeekToFirst();
-  bool Valid();
-  bool Next();
-  std::string key() const;
-  std::string value() const;
+  std::pair<Status, std::string> GetHistoricalState(const std::string& key, unsigned long long blk_idx);
+
+  std::pair<Status, std::string> GetHistoricalState(const std::string& key,
+                                                    const std::string& uuid);
+
+  std::pair<Status, std::string> GetTxnID(const std::string& key, unsigned long long blk_idx);
+
+  std::pair<Status, std::string> GetTxnID(const std::string& key, const std::string& uuid);
+
+  std::pair<Status, std::map<std::string, std::string>>
+    GetDeps(const std::string& key, unsigned long long blk_idx);
+
+  std::pair<Status, std::map<std::string, std::string>>
+    GetDeps(const std::string& key, const std::string& uuid);
 };
 
 class Iterator {

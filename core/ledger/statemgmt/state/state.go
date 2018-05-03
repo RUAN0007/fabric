@@ -84,7 +84,7 @@ func NewState() *State {
 
 // TxBegin marks begin of a new tx. If a tx is already in progress, this call panics
 func (state *State) TxBegin(txID string) {
-	logger.Debugf("txBegin() for txId [%s]", txID)
+	logger.Infof("txBegin() for txId [%s]", txID)
 	if state.txInProgress() {
 		panic(fmt.Errorf("A tx [%s] is already in progress. Received call for begin of another tx [%s]", state.currentTxID, txID))
 	}
@@ -93,7 +93,7 @@ func (state *State) TxBegin(txID string) {
 
 // TxFinish marks the completion of on-going tx. If txID is not same as of the on-going tx, this call panics
 func (state *State) TxFinish(txID string, txSuccessful bool) {
-	logger.Debugf("txFinish() for txId [%s], txSuccessful=[%t]", txID, txSuccessful)
+	logger.Infof("txFinish() for txId [%s], txSuccessful=[%t]", txID, txSuccessful)
 	if state.currentTxID != txID {
 		panic(fmt.Errorf("Different txId in tx-begin [%s] and tx-finish [%s]", state.currentTxID, txID))
 	}
@@ -131,13 +131,12 @@ func (state *State) Get(chaincodeID string, key string, committed bool) ([]byte,
 	}
 	k := statemgmt.ConstructCompositeKey(chaincodeID, key)
 	//k := []byte(key)
-	ver, err := state.db.GetMap([]byte(chaincodeID), k)
+	val, err := state.db.GetState(k)
 	if err != nil {
 		return nil, err
+	} else {
+		return val, err
 	}
-
-	return state.db.GetBlob(k, ver)
-	//return state.stateImpl.Get(chaincodeID, key)
 }
 
 // GetRangeScanIterator returns an iterator to get all the keys (and values) between startKey and endKey
@@ -161,7 +160,7 @@ func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, en
 // Set sets state to given value for chaincodeID and key. Does not immediately writes to DB
 func (state *State) Set(chaincodeID string, key string, value []byte,
 	deps []string) error {
-	logger.Debugf("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%d]", chaincodeID, key, value, len(deps))
+	logger.Infof("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%v]", chaincodeID, key, value, deps)
 	if !state.txInProgress() {
 		panic("State can be changed only in context of a tx.")
 	}
@@ -181,7 +180,7 @@ func (state *State) Set(chaincodeID string, key string, value []byte,
 			state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
 		}
 	*/
-	state.currentTxStateDelta.Set(chaincodeID, key, value, nil, deps)
+	state.currentTxStateDelta.Set(chaincodeID, key, value, nil, deps, state.currentTxID)
 	return nil
 }
 
@@ -257,18 +256,18 @@ func (state *State) GetUStoreHash() ([]byte, error) {
 	if state.recomputeHash {
 		ccIds := state.stateDelta.GetUpdatedChaincodeIds(true)
 		for _, id := range ccIds {
-			db.GetDBHandle().DB.StartMapBatch(id)
 			kvs := state.stateDelta.GetUpdates(id)
 			for key, val := range kvs {
-				// persit to Blob first
 				k := statemgmt.ConstructCompositeKey(id, key)
-				//k := []byte(key)
-				version, _ := state.db.PutBlob(k, val.Value)
-				state.db.PutMap(k, version)
+				var dep_keys [][]byte
+				logger.Infof("TxnID: [%s], Deps: %v", val.TxnID, val.Deps)
+				for _, dep := range val.Deps {
+					dep_keys = append(dep_keys, statemgmt.ConstructCompositeKey(id, dep))
+				}
+				state.db.PutState(k, val.Value, val.TxnID, dep_keys)
 			}
-			state.db.SyncMap()
 		}
-		state.lastComputedHash, _ = state.db.WriteMap()
+		state.lastComputedHash, _ = state.db.GlobalSnapshot()
 		state.recomputeHash = false
 		logger.Infof("1st compute crypto hash, value: %v", state.lastComputedHash)
 	} else {

@@ -95,7 +95,6 @@ type Ledger struct {
 var ledger *Ledger
 var ledgerError error
 var once sync.Once
-var stateKey = "s"
 
 // GetLedger - gives a reference to a 'singleton' ledger
 func GetLedger() (*Ledger, error) {
@@ -112,7 +111,7 @@ func GetLedger() (*Ledger, error) {
 		ledger.nWrites = 0
 		ledger.totalReadTime = 0
 		ledger.totalWriteTime = 0
-		db.GetDBHandle().DB.InitMap(stateKey)
+		db.GetDBHandle().DB.InitGlobalState()
 	})
 	return ledger, ledgerError
 }
@@ -321,6 +320,7 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
 	}
+	ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
 	ledger.statUtil.Stats["ledgerput"].Start(key)
 	ledger.nWrites++
 	startTime := time.Now()

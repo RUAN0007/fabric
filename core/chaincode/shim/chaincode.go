@@ -53,6 +53,9 @@ type ChaincodeStub struct {
 	securityContext *pb.ChaincodeSecurityContext
 	chaincodeEvent  *pb.ChaincodeEvent
 	args            [][]byte
+
+	dep_func   func(string, []string) []string
+	prev_reads []string
 }
 
 // Peer address derived from command line or env var
@@ -237,6 +240,8 @@ func (stub *ChaincodeStub) init(txid string, secContext *pb.ChaincodeSecurityCon
 	stub.TxID = txid
 	stub.securityContext = secContext
 	stub.args = [][]byte{}
+	chaincodeLogger.Debug("Clear the Previous Reads in Stub")
+	stub.prev_reads = nil
 	newCI := pb.ChaincodeInput{}
 	err := proto.Unmarshal(secContext.Payload, &newCI)
 	if err == nil {
@@ -273,12 +278,27 @@ func (stub *ChaincodeStub) QueryChaincode(chaincodeName string, args [][]byte) (
 
 // GetState returns the byte array value specified by the `key`.
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
-	return handler.handleGetState(key, stub.TxID)
+	data, err := handler.handleGetState(key, stub.TxID)
+	if err == nil {
+		stub.prev_reads = append(stub.prev_reads, key)
+	}
+
+	return data, err
 }
 
 // PutState writes the specified `value` and `key` into the ledger.
 func (stub *ChaincodeStub) PutState(key string, value []byte) error {
-	return handler.handlePutState(key, value, stub.TxID)
+	func_name, _ := getFunctionAndParams(stub)
+	chaincodeLogger.Debugf("Put State In Func: %s", func_name)
+	var deps []string
+	if stub.dep_func != nil {
+		chaincodeLogger.Debugf("Pre Read: %v", stub.prev_reads)
+		deps = stub.dep_func(key, stub.prev_reads)
+		chaincodeLogger.Debugf("Dependency: %v", deps)
+	} else {
+		chaincodeLogger.Debug("No Dependency Func Available. ")
+	}
+	return handler.handlePutState(key, value, stub.TxID, deps)
 }
 
 // DelState removes the specified `key` and its value from the ledger.

@@ -265,11 +265,55 @@ static void* Swig_malloc(int c) {
 #include <stdexcept>
 
 
+#include <map>
+#include <algorithm>
+#include <stdexcept>
+
+
 #include <utility>
+
+
+#include <vector>
+#include <stdexcept>
 
 
 #include "db.h"
 
+SWIGINTERN std::vector< std::string >::const_reference std_vector_Sl_std_string_Sg__get(std::vector< std::string > *self,int i){
+                int size = int(self->size());
+                if (i>=0 && i<size)
+                    return (*self)[i];
+                else
+                    throw std::out_of_range("vector index out of range");
+            }
+SWIGINTERN void std_vector_Sl_std_string_Sg__set(std::vector< std::string > *self,int i,std::vector< std::string >::value_type const &val){
+                int size = int(self->size());
+                if (i>=0 && i<size)
+                    (*self)[i] = val;
+                else
+                    throw std::out_of_range("vector index out of range");
+            }
+SWIGINTERN std::string const &std_map_Sl_std_string_Sc_std_string_Sg__get(std::map< std::string,std::string > *self,std::string const &key){
+                std::map<std::string,std::string >::iterator i = self->find(key);
+                if (i != self->end())
+                    return i->second;
+                else
+                    throw std::out_of_range("key not found");
+            }
+SWIGINTERN void std_map_Sl_std_string_Sc_std_string_Sg__set(std::map< std::string,std::string > *self,std::string const &key,std::string const &x){
+                (*self)[key] = x;
+            }
+SWIGINTERN void std_map_Sl_std_string_Sc_std_string_Sg__del(std::map< std::string,std::string > *self,std::string const &key){
+                std::map<std::string,std::string >::iterator i = self->find(key);
+                if (i != self->end())
+                    self->erase(i);
+                else
+                    throw std::out_of_range("key not found");
+            }
+SWIGINTERN bool std_map_Sl_std_string_Sc_std_string_Sg__has_key(std::map< std::string,std::string > *self,std::string const &key){
+                std::map<std::string,std::string >::iterator i = self->find(key);
+                return i != self->end();
+            }
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -780,6 +824,426 @@ void _wrap_delete_PairStatusString_ustore_b40e736282a5577d(std::pair< ustore_kvd
 }
 
 
+std::vector< std::string > *_wrap_new_VecStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::vector< std::string > *result = 0 ;
+  std::vector< std::string > *_swig_go_result;
+  
+  
+  result = (std::vector< std::string > *)new std::vector< std::string >();
+  *(std::vector< std::string > **)&_swig_go_result = (std::vector< std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+std::vector< std::string > *_wrap_new_VecStr__SWIG_1_ustore_b40e736282a5577d(long long _swig_go_0) {
+  std::vector< std::string >::size_type arg1 ;
+  std::vector< std::string > *result = 0 ;
+  std::vector< std::string > *_swig_go_result;
+  
+  arg1 = (size_t)_swig_go_0; 
+  
+  result = (std::vector< std::string > *)new std::vector< std::string >(arg1);
+  *(std::vector< std::string > **)&_swig_go_result = (std::vector< std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+long long _wrap_VecStr_size_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  std::vector< std::string >::size_type result;
+  long long _swig_go_result;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  result = ((std::vector< std::string > const *)arg1)->size();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+long long _wrap_VecStr_capacity_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  std::vector< std::string >::size_type result;
+  long long _swig_go_result;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  result = ((std::vector< std::string > const *)arg1)->capacity();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_VecStr_reserve_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0, long long _swig_go_1) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  std::vector< std::string >::size_type arg2 ;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  arg2 = (size_t)_swig_go_1; 
+  
+  (arg1)->reserve(arg2);
+  
+}
+
+
+bool _wrap_VecStr_isEmpty_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  bool result;
+  bool _swig_go_result;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  result = (bool)((std::vector< std::string > const *)arg1)->empty();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_VecStr_clear_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  (arg1)->clear();
+  
+}
+
+
+void _wrap_VecStr_add_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  std::vector< std::string >::value_type *arg2 = 0 ;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  std::vector< std::string >::value_type arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  (arg1)->push_back((std::vector< std::string >::value_type const &)*arg2);
+  
+}
+
+
+_gostring_ _wrap_VecStr_get_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0, intgo _swig_go_1) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  int arg2 ;
+  std::vector< std::string >::value_type *result = 0 ;
+  _gostring_ _swig_go_result;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
+  try {
+    result = (std::vector< std::string >::value_type *) &std_vector_Sl_std_string_Sg__get(arg1,arg2);
+  }
+  catch(std::out_of_range &_e) {
+    _swig_gopanic((&_e)->what());
+  }
+  
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
+  return _swig_go_result;
+}
+
+
+void _wrap_VecStr_set_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0, intgo _swig_go_1, _gostring_ _swig_go_2) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  int arg2 ;
+  std::vector< std::string >::value_type *arg3 = 0 ;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
+  std::vector< std::string >::value_type arg3_str(_swig_go_2.p, _swig_go_2.n);
+  arg3 = &arg3_str;
+  
+  
+  try {
+    std_vector_Sl_std_string_Sg__set(arg1,arg2,(std::string const &)*arg3);
+  }
+  catch(std::out_of_range &_e) {
+    _swig_gopanic((&_e)->what());
+  }
+  
+  
+}
+
+
+void _wrap_delete_VecStr_ustore_b40e736282a5577d(std::vector< std::string > *_swig_go_0) {
+  std::vector< std::string > *arg1 = (std::vector< std::string > *) 0 ;
+  
+  arg1 = *(std::vector< std::string > **)&_swig_go_0; 
+  
+  delete arg1;
+  
+}
+
+
+std::map< std::string,std::string > *_wrap_new_MapStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::map< std::string,std::string > *result = 0 ;
+  std::map< std::string,std::string > *_swig_go_result;
+  
+  
+  result = (std::map< std::string,std::string > *)new std::map< std::string,std::string >();
+  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+std::map< std::string,std::string > *_wrap_new_MapStr__SWIG_1_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
+  std::map< std::string,std::string > *arg1 = 0 ;
+  std::map< std::string,std::string > *result = 0 ;
+  std::map< std::string,std::string > *_swig_go_result;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (std::map< std::string,std::string > *)new std::map< std::string,std::string >((std::map< std::string,std::string > const &)*arg1);
+  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+intgo _wrap_MapStr_size_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  unsigned int result;
+  intgo _swig_go_result;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (unsigned int)((std::map< std::string,std::string > const *)arg1)->size();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+bool _wrap_MapStr_empty_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  bool result;
+  bool _swig_go_result;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (bool)((std::map< std::string,std::string > const *)arg1)->empty();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_MapStr_clear_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  (arg1)->clear();
+  
+}
+
+
+_gostring_ _wrap_MapStr_get_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  std::string *result = 0 ;
+  _gostring_ _swig_go_result;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  try {
+    result = (std::string *) &std_map_Sl_std_string_Sc_std_string_Sg__get(arg1,(std::string const &)*arg2);
+  }
+  catch(std::out_of_range &_e) {
+    _swig_gopanic((&_e)->what());
+  }
+  
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
+  return _swig_go_result;
+}
+
+
+void _wrap_MapStr_set_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  std::string *arg3 = 0 ;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
+  arg3 = &arg3_str;
+  
+  
+  std_map_Sl_std_string_Sc_std_string_Sg__set(arg1,(std::string const &)*arg2,(std::string const &)*arg3);
+  
+}
+
+
+void _wrap_MapStr_del_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  try {
+    std_map_Sl_std_string_Sc_std_string_Sg__del(arg1,(std::string const &)*arg2);
+  }
+  catch(std::out_of_range &_e) {
+    _swig_gopanic((&_e)->what());
+  }
+  
+  
+}
+
+
+bool _wrap_MapStr_has_key_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  bool result;
+  bool _swig_go_result;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  result = (bool)std_map_Sl_std_string_Sc_std_string_Sg__has_key(arg1,(std::string const &)*arg2);
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_delete_MapStr_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
+  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+  
+  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  
+  delete arg1;
+  
+}
+
+
+std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  
+  
+  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >();
+  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::Status *_swig_go_0, std::map< std::string,std::string > *_swig_go_1) {
+  ustore_kvdb::Status arg1 ;
+  std::map< std::string,std::string > arg2 ;
+  ustore_kvdb::Status *argp1 ;
+  std::map< std::string,std::string > *argp2 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  
+  
+  argp1 = (ustore_kvdb::Status *)_swig_go_0;
+  if (argp1 == NULL) {
+    _swig_gopanic("Attempt to dereference null ustore_kvdb::Status");
+  }
+  arg1 = (ustore_kvdb::Status)*argp1;
+  
+  
+  argp2 = (std::map< std::string,std::string > *)_swig_go_1;
+  if (argp2 == NULL) {
+    _swig_gopanic("Attempt to dereference null std::map< std::string,std::string >");
+  }
+  arg2 = (std::map< std::string,std::string >)*argp2;
+  
+  
+  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(arg1,arg2);
+  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_2_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = 0 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  
+  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >((std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > const &)*arg1);
+  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_PairStatusMapStr_first_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0, ustore_kvdb::Status *_swig_go_1) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+  ustore_kvdb::Status *arg2 = (ustore_kvdb::Status *) 0 ;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = *(ustore_kvdb::Status **)&_swig_go_1; 
+  
+  if (arg1) (arg1)->first = *arg2;
+  
+}
+
+
+ustore_kvdb::Status *_wrap_PairStatusMapStr_first_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+  ustore_kvdb::Status *result = 0 ;
+  ustore_kvdb::Status *_swig_go_result;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  
+  result = (ustore_kvdb::Status *)& ((arg1)->first);
+  *(ustore_kvdb::Status **)&_swig_go_result = (ustore_kvdb::Status *)result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_PairStatusMapStr_second_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0, std::map< std::string,std::string > *_swig_go_1) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+  std::map< std::string,std::string > *arg2 = (std::map< std::string,std::string > *) 0 ;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = *(std::map< std::string,std::string > **)&_swig_go_1; 
+  
+  if (arg1) (arg1)->second = *arg2;
+  
+}
+
+
+std::map< std::string,std::string > *_wrap_PairStatusMapStr_second_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+  std::map< std::string,std::string > *result = 0 ;
+  std::map< std::string,std::string > *_swig_go_result;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  
+  result = (std::map< std::string,std::string > *)& ((arg1)->second);
+  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_delete_PairStatusMapStr_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+  
+  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  
+  delete arg1;
+  
+}
+
+
 ustore_kvdb::KVDB *_wrap_new_KVDB__SWIG_0_ustore_b40e736282a5577d(intgo _swig_go_0, _gostring_ _swig_go_1) {
   unsigned int arg1 ;
   std::string *arg2 = 0 ;
@@ -927,29 +1391,6 @@ ustore_kvdb::Iterator *_wrap_KVDB_NewIterator_ustore_b40e736282a5577d(ustore_kvd
 }
 
 
-ustore_kvdb::MapIterator *_wrap_KVDB_NewMapIterator_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
-  ustore_kvdb::MapIterator *result = 0 ;
-  ustore_kvdb::MapIterator *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (ustore_kvdb::MapIterator *)(arg1)->NewMapIterator((std::string const &)*arg2,(std::string const &)*arg3);
-  *(ustore_kvdb::MapIterator **)&_swig_go_result = (ustore_kvdb::MapIterator *)result; 
-  return _swig_go_result;
-}
-
-
 long long _wrap_KVDB_GetSize_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   size_t result;
@@ -976,46 +1417,35 @@ _gostring_ _wrap_KVDB_GetCFName_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig
 }
 
 
-ustore_kvdb::Status *_wrap_KVDB_InitMap_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
+ustore_kvdb::Status *_wrap_KVDB_InitGlobalState_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
   ustore_kvdb::Status result;
   ustore_kvdb::Status *_swig_go_result;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
   
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  result = (arg1)->InitMap((std::string const &)*arg2);
+  result = (arg1)->InitGlobalState();
   *(ustore_kvdb::Status **)&_swig_go_result = new ustore_kvdb::Status(result); 
   return _swig_go_result;
 }
 
 
-ustore_kvdb::Status *_wrap_KVDB_StartMapBatch_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_Commit_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  ustore_kvdb::Status result;
-  ustore_kvdb::Status *_swig_go_result;
+  std::pair< ustore_kvdb::Status,std::string > result;
+  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
   
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  result = (arg1)->StartMapBatch((std::string const &)*arg2);
-  *(ustore_kvdb::Status **)&_swig_go_result = new ustore_kvdb::Status(result); 
+  result = (arg1)->Commit();
+  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_PutMap_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetState_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
   std::pair< ustore_kvdb::Status,std::string > result;
   std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
   
@@ -1025,69 +1455,20 @@ std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_PutMap_ustore_b40e73628
   arg2 = &arg2_str;
   
   
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (arg1)->PutMap((std::string const &)*arg2,(std::string const &)*arg3);
+  result = (arg1)->GetState((std::string const &)*arg2);
   *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_PutBlob_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (arg1)->PutBlob((std::string const &)*arg2,(std::string const &)*arg3);
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetMap__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (arg1)->GetMap((std::string const &)*arg2,(std::string const &)*arg3);
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetMap__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2, _gostring_ _swig_go_3) {
+bool _wrap_KVDB_PutState_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2, _gostring_ _swig_go_3, std::vector< std::string > *_swig_go_4) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
   std::string *arg3 = 0 ;
   std::string *arg4 = 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
+  std::vector< std::string > *arg5 = 0 ;
+  bool result;
+  bool _swig_go_result;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
   
@@ -1102,37 +1483,15 @@ std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetMap__SWIG_1_ustore_b
   std::string arg4_str(_swig_go_3.p, _swig_go_3.n);
   arg4 = &arg4_str;
   
+  arg5 = *(std::vector< std::string > **)&_swig_go_4; 
   
-  result = (arg1)->GetMap((std::string const &)*arg2,(std::string const &)*arg3,(std::string const &)*arg4);
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  result = (bool)(arg1)->PutState((std::string const &)*arg2,(std::string const &)*arg3,(std::string const &)*arg4,(std::vector< std::string > const &)*arg5);
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,ustore_kvdb::MapIterator * > *_wrap_KVDB_GetMapIterator_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
-  SwigValueWrapper< std::pair< ustore_kvdb::Status,ustore_kvdb::MapIterator * > > result;
-  std::pair< ustore_kvdb::Status,ustore_kvdb::MapIterator * > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (arg1)->GetMapIterator((std::string const &)*arg2,(std::string const &)*arg3);
-  *(std::pair< ustore_kvdb::Status,ustore_kvdb::MapIterator * > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,ustore_kvdb::MapIterator * >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetPreviousVersion_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetBlock_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
   std::string *arg3 = 0 ;
@@ -1149,57 +1508,13 @@ std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetPreviousVersion_usto
   arg3 = &arg3_str;
   
   
-  result = (arg1)->GetPreviousVersion((std::string const &)*arg2,(std::string const &)*arg3);
+  result = (arg1)->GetBlock((std::string const &)*arg2,(std::string const &)*arg3);
   *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_SyncMap_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  result = (arg1)->SyncMap();
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_WriteMap_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  result = (arg1)->WriteMap();
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetBlob__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
-  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::pair< ustore_kvdb::Status,std::string > result;
-  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
-  
-  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  result = (arg1)->GetBlob((std::string const &)*arg2);
-  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
-  return _swig_go_result;
-}
-
-
-std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetBlob__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_PutBlock_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
   std::string *arg3 = 0 ;
@@ -1216,8 +1531,137 @@ std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetBlob__SWIG_1_ustore_
   arg3 = &arg3_str;
   
   
-  result = (arg1)->GetBlob((std::string const &)*arg2,(std::string const &)*arg3);
+  result = (arg1)->PutBlock((std::string const &)*arg2,(std::string const &)*arg3);
   *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetHistoricalState__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, long long _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  unsigned long long arg3 ;
+  std::pair< ustore_kvdb::Status,std::string > result;
+  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  arg3 = (unsigned long long)_swig_go_2; 
+  
+  result = (arg1)->GetHistoricalState((std::string const &)*arg2,arg3);
+  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetHistoricalState__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  std::string *arg3 = 0 ;
+  std::pair< ustore_kvdb::Status,std::string > result;
+  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
+  arg3 = &arg3_str;
+  
+  
+  result = (arg1)->GetHistoricalState((std::string const &)*arg2,(std::string const &)*arg3);
+  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetTxnID__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, long long _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  unsigned long long arg3 ;
+  std::pair< ustore_kvdb::Status,std::string > result;
+  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  arg3 = (unsigned long long)_swig_go_2; 
+  
+  result = (arg1)->GetTxnID((std::string const &)*arg2,arg3);
+  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetTxnID__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  std::string *arg3 = 0 ;
+  std::pair< ustore_kvdb::Status,std::string > result;
+  std::pair< ustore_kvdb::Status,std::string > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
+  arg3 = &arg3_str;
+  
+  
+  result = (arg1)->GetTxnID((std::string const &)*arg2,(std::string const &)*arg3);
+  *(std::pair< ustore_kvdb::Status,std::string > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::string >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, long long _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  unsigned long long arg3 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > result;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  arg3 = (unsigned long long)_swig_go_2; 
+  
+  result = (arg1)->GetDeps((std::string const &)*arg2,arg3);
+  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(result); 
+  return _swig_go_result;
+}
+
+
+std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  std::string *arg3 = 0 ;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > result;
+  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
+  arg3 = &arg3_str;
+  
+  
+  result = (arg1)->GetDeps((std::string const &)*arg2,(std::string const &)*arg3);
+  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(result); 
   return _swig_go_result;
 }
 
@@ -1226,112 +1670,6 @@ void _wrap_delete_KVDB_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
-  
-  delete arg1;
-  
-}
-
-
-ustore_kvdb::MapIterator *_wrap_new_MapIterator__SWIG_0_ustore_b40e736282a5577d() {
-  ustore_kvdb::MapIterator *result = 0 ;
-  ustore_kvdb::MapIterator *_swig_go_result;
-  
-  
-  result = (ustore_kvdb::MapIterator *)new ustore_kvdb::MapIterator();
-  *(ustore_kvdb::MapIterator **)&_swig_go_result = (ustore_kvdb::MapIterator *)result; 
-  return _swig_go_result;
-}
-
-
-ustore_kvdb::MapIterator *_wrap_new_MapIterator__SWIG_1_ustore_b40e736282a5577d(ustore::ObjectDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  ustore::ObjectDB *arg1 = (ustore::ObjectDB *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
-  ustore_kvdb::MapIterator *result = 0 ;
-  ustore_kvdb::MapIterator *_swig_go_result;
-  
-  arg1 = *(ustore::ObjectDB **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  result = (ustore_kvdb::MapIterator *)new ustore_kvdb::MapIterator(arg1,(std::string const &)*arg2,(std::string const &)*arg3);
-  *(ustore_kvdb::MapIterator **)&_swig_go_result = (ustore_kvdb::MapIterator *)result; 
-  return _swig_go_result;
-}
-
-
-void _wrap_MapIterator_SeekToFirst_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
-  
-  (arg1)->SeekToFirst();
-  
-}
-
-
-bool _wrap_MapIterator_Valid_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  bool result;
-  bool _swig_go_result;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
-  
-  result = (bool)(arg1)->Valid();
-  _swig_go_result = result; 
-  return _swig_go_result;
-}
-
-
-bool _wrap_MapIterator_Next_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  bool result;
-  bool _swig_go_result;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
-  
-  result = (bool)(arg1)->Next();
-  _swig_go_result = result; 
-  return _swig_go_result;
-}
-
-
-_gostring_ _wrap_MapIterator_key_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  std::string result;
-  _gostring_ _swig_go_result;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
-  
-  result = ((ustore_kvdb::MapIterator const *)arg1)->key();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
-  return _swig_go_result;
-}
-
-
-_gostring_ _wrap_MapIterator_value_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  std::string result;
-  _gostring_ _swig_go_result;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
-  
-  result = ((ustore_kvdb::MapIterator const *)arg1)->value();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
-  return _swig_go_result;
-}
-
-
-void _wrap_delete_MapIterator_ustore_b40e736282a5577d(ustore_kvdb::MapIterator *_swig_go_0) {
-  ustore_kvdb::MapIterator *arg1 = (ustore_kvdb::MapIterator *) 0 ;
-  
-  arg1 = *(ustore_kvdb::MapIterator **)&_swig_go_0; 
   
   delete arg1;
   

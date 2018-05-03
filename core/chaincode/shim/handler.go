@@ -292,6 +292,7 @@ func (handler *Handler) handleTransaction(msg *pb.ChaincodeMessage) {
 		stub := new(ChaincodeStub)
 		stub.init(msg.Txid, msg.SecurityContext)
 		function, params := getFunctionAndParams(stub)
+		stub.dep_func = handler.cc.GetDepFunc(function)
 		res, err := handler.cc.Invoke(stub, function, params)
 
 		// delete isTransaction entry
@@ -478,14 +479,14 @@ func (handler *Handler) handleGetState(key string, txid string) ([]byte, error) 
 }
 
 // handlePutState communicates with the validator to put state information into the ledger.
-func (handler *Handler) handlePutState(key string, value []byte, txid string) error {
+func (handler *Handler) handlePutState(key string, value []byte, txid string, deps []string) error {
 	// Check if this is a transaction
-//	chaincodeLogger.Debugf("[%s]Inside putstate, isTransaction = %t", shorttxid(txid), handler.isTransaction[txid])
-//	if !handler.isTransaction[txid] {
-//		return errors.New("Cannot put state in query context")
-//	}
+	//	chaincodeLogger.Debugf("[%s]Inside putstate, isTransaction = %t", shorttxid(txid), handler.isTransaction[txid])
+	//	if !handler.isTransaction[txid] {
+	//		return errors.New("Cannot put state in query context")
+	//	}
 
-	payload := &pb.PutStateInfo{Key: key, Value: value}
+	payload := &pb.PutStateInfo{Key: key, Value: value, Deps: deps}
 	payloadBytes, err := proto.Marshal(payload)
 	if err != nil {
 		return errors.New("Failed to process put state request")
