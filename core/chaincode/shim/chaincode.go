@@ -278,9 +278,14 @@ func (stub *ChaincodeStub) QueryChaincode(chaincodeName string, args [][]byte) (
 
 // GetState returns the byte array value specified by the `key`.
 func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
+	func_name, _ := getFunctionAndParams(stub)
 	data, err := handler.handleGetState(key, stub.TxID)
-	if err == nil {
+	chaincodeLogger.Debugf("Get State In Func: %s for Key %s", func_name, key)
+	if err == nil && len(data) > 0 {
+		chaincodeLogger.Infof("Able to get state %s", key)
 		stub.prev_reads = append(stub.prev_reads, key)
+	} else {
+		chaincodeLogger.Infof("Unable to get state %s", key)
 	}
 
 	return data, err
@@ -289,7 +294,7 @@ func (stub *ChaincodeStub) GetState(key string) ([]byte, error) {
 // PutState writes the specified `value` and `key` into the ledger.
 func (stub *ChaincodeStub) PutState(key string, value []byte) error {
 	func_name, _ := getFunctionAndParams(stub)
-	chaincodeLogger.Debugf("Put State In Func: %s", func_name)
+	chaincodeLogger.Debugf("Put State In Func: %s for Key ", func_name, key)
 	var deps []string
 	if stub.dep_func != nil {
 		chaincodeLogger.Debugf("Pre Read: %v", stub.prev_reads)

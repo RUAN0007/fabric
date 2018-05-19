@@ -293,6 +293,12 @@ func (handler *Handler) handleTransaction(msg *pb.ChaincodeMessage) {
 		stub.init(msg.Txid, msg.SecurityContext)
 		function, params := getFunctionAndParams(stub)
 		stub.dep_func = handler.cc.GetDepFunc(function)
+
+		if stub.dep_func == nil {
+			chaincodeLogger.Infof("Fail to get any dependeny function")
+		} else {
+			chaincodeLogger.Infof("Get Dependency Function")
+		}
 		res, err := handler.cc.Invoke(stub, function, params)
 
 		// delete isTransaction entry
