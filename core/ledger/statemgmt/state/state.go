@@ -119,7 +119,7 @@ func (state *State) txInProgress() bool {
 // pulls from db. If committed is true, this pulls from the db only.
 func (state *State) Get(chaincodeID string, key string, committed bool) ([]byte, error) {
 	if !committed {
-		panic("Not in a tx")
+		// panic("Not in a tx")
 		valueHolder := state.currentTxStateDelta.Get(chaincodeID, key)
 		if valueHolder != nil {
 			return valueHolder.GetValue(), nil
@@ -160,7 +160,7 @@ func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, en
 // Set sets state to given value for chaincodeID and key. Does not immediately writes to DB
 func (state *State) Set(chaincodeID string, key string, value []byte,
 	deps []string) error {
-	logger.Infof("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%v]", chaincodeID, key, value, deps)
+	// logger.Infof("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%v]", chaincodeID, key, value, deps)
 	if !state.txInProgress() {
 		panic("State can be changed only in context of a tx.")
 	}

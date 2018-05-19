@@ -88,9 +88,10 @@ func (stateDelta *StateDelta) ApplyChanges(anotherStateDelta *StateDelta) {
 				existingUpdateValue, existingUpdate := existingChaincodeStateDelta.UpdatedKVs[key]
 				if existingUpdate {
 					// The existing state delta already has an updated value for this key.
-					panic("Consecutive writes on ccid " + string(chaincodeID) + " key " + key)
+					// panic("Consecutive writes on ccid " + string(chaincodeID) + " key " + key)
 					previousValue = existingUpdateValue.PreviousValue
-					previousDeps = existingUpdateValue.Deps
+					previousDeps = valueHolder.Deps
+					previousTxn = valueHolder.TxnID
 				} else {
 					// Use the previous value set in the new state delta
 					previousValue = valueHolder.PreviousValue
