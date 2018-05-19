@@ -107,6 +107,7 @@ func GetLedger() (*Ledger, error) {
 		ledgerLogger.Infof("Sample interval : %v", sampleInterval)
 		ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
 		ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
+		ledger.statUtil.NewStat("txn", uint32(sampleInterval))
 		ledger.nReads = 0
 		ledger.nWrites = 0
 		ledger.totalReadTime = 0
@@ -262,6 +263,7 @@ func (ledger *Ledger) RollbackTxBatch(id interface{}) error {
 
 // TxBegin - Marks the begin of a new transaction in the ongoing batch
 func (ledger *Ledger) TxBegin(txID string) {
+	ledger.statUtil.Stats["txn"].Start(txID)
 	ledger.state.TxBegin(txID)
 }
 
@@ -269,6 +271,9 @@ func (ledger *Ledger) TxBegin(txID string) {
 // If txSuccessful is false, the state changes made by the transaction are discarded
 func (ledger *Ledger) TxFinished(txID string, txSuccessful bool) {
 	ledger.state.TxFinish(txID, txSuccessful)
+	if val, ok := ledger.statUtil.Stats["txn"].End(txID); ok {
+		ledgerLogger.Infof("Txn Execution latency: %v", val)
+	}
 }
 
 /////////////////// world-state related methods /////////////////////////////////////
