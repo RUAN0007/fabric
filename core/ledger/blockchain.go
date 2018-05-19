@@ -124,7 +124,7 @@ func (blockchain *blockchain) getBlockByHash(blockHash []byte) (*protos.Block, e
 }
 
 func (blockchain *blockchain) getTransactionByID(txID string) (*protos.Transaction, error) {
-	panic("getTransactionByID not implemented")
+	// panic("getTransactionByID not implemented")
 	blockNumber, txIndex, err := blockchain.indexer.fetchTransactionIndexByID(txID)
 	if err != nil {
 		return nil, err
