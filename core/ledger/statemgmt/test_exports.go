@@ -63,7 +63,7 @@ func ConstructRandomStateDelta(
 			panic(fmt.Errorf("valueSize cannot be less than one. ValueSize=%d", valueSize))
 		}
 		value := testutil.ConstructRandomBytes(t, valueSize)
-		delta.Set(chaincodeID, key, value, nil, nil, "")
+		delta.Set(chaincodeID, key, value, nil)
 	}
 
 	for _, chaincodeDelta := range delta.ChaincodeStateDeltas {

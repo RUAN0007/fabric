@@ -158,8 +158,7 @@ func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, en
 }
 
 // Set sets state to given value for chaincodeID and key. Does not immediately writes to DB
-func (state *State) Set(chaincodeID string, key string, value []byte,
-	deps []string) error {
+func (state *State) Set(chaincodeID string, key string, value []byte) error {
 	// logger.Infof("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%v]", chaincodeID, key, value, deps)
 	if !state.txInProgress() {
 		panic("State can be changed only in context of a tx.")
@@ -180,7 +179,7 @@ func (state *State) Set(chaincodeID string, key string, value []byte,
 			state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
 		}
 	*/
-	state.currentTxStateDelta.Set(chaincodeID, key, value, nil, deps, state.currentTxID)
+	state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
 	return nil
 }
 
@@ -259,12 +258,12 @@ func (state *State) GetUStoreHash() ([]byte, error) {
 			kvs := state.stateDelta.GetUpdates(id)
 			for key, val := range kvs {
 				k := statemgmt.ConstructCompositeKey(id, key)
-				var dep_keys [][]byte
-				logger.Infof("TxnID: [%s], Deps: %v", val.TxnID, val.Deps)
-				for _, dep := range val.Deps {
-					dep_keys = append(dep_keys, statemgmt.ConstructCompositeKey(id, dep))
-				}
-				state.db.PutState(k, val.Value, val.TxnID, dep_keys)
+				// var dep_keys [][]byte
+				// logger.Infof("TxnID: [%s], Deps: %v", val.TxnID, val.Deps)
+				// for _, dep := range val.Deps {
+				// 	dep_keys = append(dep_keys, statemgmt.ConstructCompositeKey(id, dep))
+				// }
+				state.db.PutState(k, val.Value, "", nil)
 			}
 		}
 		state.lastComputedHash, _ = state.db.GlobalSnapshot()

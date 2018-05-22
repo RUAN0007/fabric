@@ -178,9 +178,9 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		return err
 	}
 
-	//stateHash, err := ledger.state.GetHash()
-	ledger.state.PrepareToCommit()
-	stateHash, err := ledger.state.GetUStoreHash()
+	stateHash, err := ledger.state.GetHash()
+	// ledger.state.PrepareToCommit()
+	// stateHash, err := ledger.state.GetUStoreHash()
 	if err != nil {
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
@@ -222,7 +222,7 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		return err
 	}
 
-	//ledger.state.AddChangesForPersistence(newBlockNumber, writeBatch)
+	ledger.state.AddChangesForPersistence(newBlockNumber, writeBatch)
 	opt := gorocksdb.NewDefaultWriteOptions()
 	defer opt.Destroy()
 	dbErr := db.GetDBHandle().DB.Write(opt, writeBatch)
@@ -329,7 +329,7 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 	ledger.statUtil.Stats["ledgerput"].Start(key)
 	ledger.nWrites++
 	startTime := time.Now()
-	res := ledger.state.Set(chaincodeID, key, value, deps)
+	res := ledger.state.Set(chaincodeID, key, value)
 	ledger.totalWriteTime += uint64(time.Since(startTime))
 	if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
 		ledgerLogger.Infof("PutState latency: %v", val)
