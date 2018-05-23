@@ -19,10 +19,10 @@ package buckettree
 import (
 	"bytes"
 
-	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
 	"github.com/op/go-logging"
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 )
 
 var logger = logging.MustGetLogger("buckettree")

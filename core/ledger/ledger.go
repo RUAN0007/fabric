@@ -18,8 +18,11 @@ package ledger
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -112,7 +115,7 @@ func GetLedger() (*Ledger, error) {
 		ledger.nWrites = 0
 		ledger.totalReadTime = 0
 		ledger.totalWriteTime = 0
-		db.GetDBHandle().DB.InitGlobalState()
+		// db.GetDBHandle().DB.InitGlobalState()
 	})
 	return ledger, ledgerError
 }
@@ -167,6 +170,62 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	block := ledger.blockchain.buildBlock(protos.NewBlock(transactions, metadata), stateHash)
 	info := ledger.blockchain.getBlockchainInfoForBlock(ledger.blockchain.getSize()+1, block)
 	return info, nil
+}
+
+func GetHistoricalState(ccid, key string, blk_idx uint64) (string, bool) {
+	it := db.GetDBHandle().GetStateCFIterator()
+	long_key1 := "hist_" + ccid + "_" + key + "_" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
+
+	for it.Seek([]byte(long_key1)); it.Valid(); it.Prev() {
+		splits := strings.Split(string(it.Key().Data()), "_")
+		ledgerLogger.Infof("Splits: %v", splits)
+
+		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] != key {
+			ledgerLogger.Infof("Find Invalid Record")
+			return "", false
+		}
+
+		retrieved_idx, err := strconv.Atoi(splits[3])
+		if err != nil {
+			panic("Fail to parse index" + splits[3])
+		}
+
+		if uint64(retrieved_idx) <= blk_idx {
+			value := string(it.Value().Data())
+			return value, true
+		}
+	}
+	return "", false
+}
+
+func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
+	it := db.GetDBHandle().GetStateCFIterator()
+	long_key := "prov_" + ccid + "_" + key + "_" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
+
+	for it.Seek([]byte(long_key)); it.Valid(); it.Prev() {
+		splits := strings.Split(string(it.Key().Data()), "_")
+		ledgerLogger.Infof("Splits: %v", splits)
+
+		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] != key {
+			ledgerLogger.Infof("Find Invalid Record")
+			return "", nil, false
+		}
+
+		retrieved_idx, err := strconv.Atoi(splits[3])
+		if err != nil {
+			panic("Fail to parse index" + splits[3])
+		}
+
+		if uint64(retrieved_idx) <= blk_idx {
+			var prov Prov
+			err := json.Unmarshal(it.Value().Data(), &prov)
+			if err != nil {
+				panic("Fail to unmarshal the provenance record")
+			}
+			return prov.TxnID, prov.Deps, true
+		}
+	}
+	return "", nil, false
 }
 
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
@@ -245,6 +304,35 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+
+	// if newBlockNumber == 6 {
+	// 	ledgerLogger.Infof("Perform some prov queries.")
+	// 	prev_state, exists := GetHistoricalState("rcoin", "A", 5)
+	// 	if !exists {
+	// 		panic("Cannot find rcoin A5 historical state")
+	// 	} else {
+	// 		ledgerLogger.Infof("Historical State for A5: %s", prev_state)
+	// 	}
+	// 	txnID, deps, exists := GetTxnDeps("rcoin", "A", 5)
+	// 	if !exists {
+	// 		panic("Cannot find rcoin A5 txn and Dependency")
+	// 	} else {
+	// 		ledgerLogger.Infof("TxnID: %s and Deps: %v", txnID, deps)
+	// 	}
+
+	// 	prev_state, exists = GetHistoricalState("rcoin", "A", 4)
+	// 	if !exists {
+	// 		panic("Cannot find rcoin A4 historical state")
+	// 	} else {
+	// 		ledgerLogger.Infof("Historical State for A4: %s", prev_state)
+	// 	}
+	// 	txnID, deps, exists = GetTxnDeps("rcoin", "A", 4)
+	// 	if !exists {
+	// 		panic("Cannot find rcoin A4 txn and Dependency")
+	// 	} else {
+	// 		ledgerLogger.Infof("TxnID: %s and Deps: %v", txnID, deps)
+	// 	}
+	// }
 	return nil
 }
 
@@ -282,7 +370,8 @@ func (ledger *Ledger) TxFinished(txID string, txSuccessful bool) {
 // GetTempStateHash - Computes state hash by taking into account the state changes that may have taken
 // place during the execution of current transaction-batch
 func (ledger *Ledger) GetTempStateHash() ([]byte, error) {
-	return ledger.state.GetUStoreHash()
+	// return ledger.state.GetUStoreHash()
+	return ledger.state.GetHash()
 	//return nil, nil
 }
 
@@ -316,11 +405,25 @@ func (ledger *Ledger) GetState(chaincodeID string, key string, committed bool) (
 // The key-values in the returned iterator are not guaranteed to be in any specific order
 func (ledger *Ledger) GetStateRangeScanIterator(chaincodeID string, startKey string, endKey string, committed bool) (statemgmt.RangeScanIterator, error) {
 	panic("GetStateRangeScane not implemented")
+
 	return ledger.state.GetRangeScanIterator(chaincodeID, startKey, endKey, committed)
+}
+
+func lpad(s string, pad string, plength int) string {
+	for i := len(s); i < plength; i++ {
+		s = pad + s
+	}
+	return s
+}
+
+type Prov struct {
+	TxnID string
+	Deps  []string
 }
 
 // SetState sets state to given value for chaincodeID and key. Does not immideatly writes to DB
 func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, deps []string) error {
+
 	if key == "" || value == nil {
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
@@ -330,9 +433,40 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 	ledger.nWrites++
 	startTime := time.Now()
 	res := ledger.state.Set(chaincodeID, key, value)
+
 	ledger.totalWriteTime += uint64(time.Since(startTime))
 	if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
 		ledgerLogger.Infof("PutState latency: %v", val)
+	}
+
+	writeBatch := gorocksdb.NewWriteBatch()
+	defer writeBatch.Destroy()
+
+	next_blk_idx := int(ledger.blockchain.getSize())
+	pad_blk_idx := lpad(strconv.Itoa(next_blk_idx), "0", 9)
+	ledgerLogger.Info("Pad Blk Idx: ", pad_blk_idx)
+	long_key1 := "hist_" + chaincodeID + "_" + key + "_" + pad_blk_idx
+	long_key2 := "prov_" + chaincodeID + "_" + key + "_" + pad_blk_idx
+	cf := db.GetDBHandle().StateCF
+	writeBatch.PutCF(cf, []byte(long_key1), value)
+
+	var prov Prov
+	prov.TxnID = ledger.state.GetTxnID()
+	ledgerLogger.Infof("Long Key1: %s, val: %s, txnID: %s", long_key1, string(value), prov.TxnID)
+	prov.Deps = make([]string, len(deps))
+	copy(prov.Deps, deps)
+	b, err := json.Marshal(prov)
+	if err != nil {
+		panic("Fail to marshal provenance")
+	}
+	ledgerLogger.Infof("Long Key2: %s", long_key2)
+	writeBatch.PutCF(cf, []byte(long_key2), b)
+
+	opt := gorocksdb.NewDefaultWriteOptions()
+	defer opt.Destroy()
+	dbErr := db.GetDBHandle().DB.Write(opt, writeBatch)
+	if dbErr != nil {
+		panic("Fail to write provenance stuff")
 	}
 	return res
 }
@@ -562,7 +696,6 @@ func (ledger *Ledger) resetForNextTxGroup(txCommited bool) {
 }
 
 func sendProducerBlockEvent(block *protos.Block) {
-
 	// Remove payload from deploy transactions. This is done to make block
 	// events more lightweight as the payload for these types of transactions
 	// can be very large.
@@ -599,4 +732,5 @@ func sendChaincodeEvents(trs []*protos.TransactionResult) {
 			}
 		}
 	}
+
 }

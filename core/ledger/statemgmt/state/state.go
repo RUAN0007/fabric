@@ -23,9 +23,9 @@ import (
 	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
-	"github.com/hyperledger/fabric/core/ledger/statemgmt/buckettree"
+	// "github.com/hyperledger/fabric/core/ledger/statemgmt/buckettree"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/raw"
-	"github.com/hyperledger/fabric/core/ledger/statemgmt/trie"
+	// "github.com/hyperledger/fabric/core/ledger/statemgmt/trie"
 	"github.com/op/go-logging"
 )
 
@@ -66,9 +66,11 @@ func NewState() *State {
 	logger.Infof("                                          Initializing state implementation [%s]", stateImplName)
 	switch stateImplName {
 	case buckettreeType:
-		stateImpl = buckettree.NewStateImpl()
+		// stateImpl = buckettree.NewStateImpl()
+		stateImpl = raw.NewStateImpl()
 	case trieType:
-		stateImpl = trie.NewStateImpl()
+		// stateImpl = trie.NewStateImpl()
+		stateImpl = raw.NewStateImpl()
 	case rawType:
 		stateImpl = raw.NewStateImpl()
 	default:
@@ -89,6 +91,10 @@ func (state *State) TxBegin(txID string) {
 		panic(fmt.Errorf("A tx [%s] is already in progress. Received call for begin of another tx [%s]", state.currentTxID, txID))
 	}
 	state.currentTxID = txID
+}
+
+func (state *State) GetTxnID() string {
+	return state.currentTxID
 }
 
 // TxFinish marks the completion of on-going tx. If txID is not same as of the on-going tx, this call panics
@@ -129,14 +135,7 @@ func (state *State) Get(chaincodeID string, key string, committed bool) ([]byte,
 			return valueHolder.GetValue(), nil
 		}
 	}
-	k := statemgmt.ConstructCompositeKey(chaincodeID, key)
-	//k := []byte(key)
-	val, err := state.db.GetState(k)
-	if err != nil {
-		return nil, err
-	} else {
-		return val, err
-	}
+	return state.stateImpl.Get(chaincodeID, key)
 }
 
 // GetRangeScanIterator returns an iterator to get all the keys (and values) between startKey and endKey
@@ -160,26 +159,25 @@ func (state *State) GetRangeScanIterator(chaincodeID string, startKey string, en
 // Set sets state to given value for chaincodeID and key. Does not immediately writes to DB
 func (state *State) Set(chaincodeID string, key string, value []byte) error {
 	// logger.Infof("set() chaincodeID=[%s], key=[%s], value=[%#v], # of deps=[%v]", chaincodeID, key, value, deps)
+	logger.Debugf("set() chaincodeID=[%s], key=[%s], value=[%#v]", chaincodeID, key, value)
 	if !state.txInProgress() {
 		panic("State can be changed only in context of a tx.")
 	}
 
-	/*
-		// Check if a previous value is already set in the state delta
-		if state.currentTxStateDelta.IsUpdatedValueSet(chaincodeID, key) {
-			// No need to bother looking up the previous value as we will not
-			// set it again. Just pass nil
-			state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
-		} else {
-			// Need to lookup the previous value
-			previousValue, err := state.Get(chaincodeID, key, true)
-			if err != nil {
-				return err
-			}
-			state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
+	// Check if a previous value is already set in the state delta
+	if state.currentTxStateDelta.IsUpdatedValueSet(chaincodeID, key) {
+		// No need to bother looking up the previous value as we will not
+		// set it again. Just pass nil
+		state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
+	} else {
+		// Need to lookup the previous value
+		previousValue, err := state.Get(chaincodeID, key, true)
+		if err != nil {
+			return err
 		}
-	*/
-	state.currentTxStateDelta.Set(chaincodeID, key, value, nil)
+		state.currentTxStateDelta.Set(chaincodeID, key, value, previousValue)
+	}
+
 	return nil
 }
 

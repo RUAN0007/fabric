@@ -215,22 +215,15 @@ func (blockchain *blockchain) addPersistenceChangesForNewBlock(ctx context.Conte
 		block.NonHashData.LocalLedgerCommitTimestamp = util.CreateUtcTimestamp()
 	}
 	blockNumber := blockchain.size
-	/*
-		blockHash, err := block.GetHash()
-		if err != nil {
-			return 0, err
-		}
-	*/
+	blockHash, err := block.GetHash()
+	if err != nil {
+		return 0, err
+	}
 	blockBytes, blockBytesErr := block.Bytes()
 	if blockBytesErr != nil {
 		return 0, blockBytesErr
 	}
-	blockHash, err := db.GetDBHandle().PutBlock(blockchainKey, blockBytes)
-	if err != nil {
-		return 0, err
-	}
-	//writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockBytes)
-	writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockHash)
+	writeBatch.PutCF(db.GetDBHandle().BlockchainCF, encodeBlockNumberDBKey(blockNumber), blockBytes)
 	writeBatch.PutCF(db.GetDBHandle().BlockchainCF, blockCountKey, encodeUint64(blockNumber+1))
 	if blockchain.indexer.isSynchronous() {
 		blockchain.indexer.createIndexes(block, blockNumber, blockHash, writeBatch)
@@ -301,9 +294,9 @@ func fetchBlockFromDB(blockNumber uint64) (*protos.Block, error) {
 	}
 
 	// then fetch from ustore
-	data, err := db.GetDBHandle().GetBlock(blockchainKey, blockBytes)
-	return protos.UnmarshallBlock(data)
-	//return protos.UnmarshallBlock(blockBytes)
+	// data, err := db.GetDBHandle().GetBlock(blockchainKey, blockBytes)
+	// return protos.UnmarshallBlock(data)
+	return protos.UnmarshallBlock(blockBytes)
 }
 
 // no change with UStore
