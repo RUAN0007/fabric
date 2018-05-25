@@ -529,10 +529,45 @@ func (db *DB) InitGlobalState() error {
 
 }
 
+func (db *DB) GetHistoricalState(key string, blk_idx uint64) (string, error) {
+	onlyUStore()
+	return db.udb.GetHistoricalState(key, blk_idx)
+}
+
+func (db *DB) GetTxnID(key string, blk_idx uint64) (string, error) {
+	onlyUStore()
+	return db.udb.GetTxnID(key, blk_idx)
+}
+
+func (db *DB) GetHistoricalStateVersion(key string, version string) (string, error) {
+	onlyUStore()
+	return db.udb.GetHistoricalStateVersion(key, version)
+}
+
+func (db *DB) GetTxnIDVersion(key string, version string) (string, error) {
+	onlyUStore()
+	return db.udb.GetTxnIDVersion(key, version)
+}
+
+func (db *DB) GetDeps(key string, blk_idx uint64) ([]string, []string, error) {
+	onlyUStore()
+	return db.udb.GetDeps(key, blk_idx)
+}
+
+func (db *DB) GetDepsVersion(key string, version string) ([]string, []string, error) {
+	onlyUStore()
+	return db.udb.GetDepsVersion(key, version)
+}
+
 func (db *DB) PutState(key, value []byte, txnID string, deps [][]byte) error {
 	onlyUStore()
 	db.udb.PutState(key, value, txnID, deps)
 	return nil
+}
+
+func (db *DB) UDB() *ustoredb.UStoreDB {
+	onlyUStore()
+	return db.udb
 }
 
 func (db *DB) GetState(key []byte) (*Slice, error) {

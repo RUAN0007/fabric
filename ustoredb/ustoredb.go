@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/ustore"
 	"github.com/op/go-logging"
+	"strconv"
 	"sync"
 )
 
@@ -104,6 +105,69 @@ func (db *UStoreDB) InitGlobalState() error {
 	return nil
 }
 
+func (db *UStoreDB) GetHistoricalState(key string, blk_idx uint64) (string, error) {
+	if status_str := db.db.GetHistoricalState(key, blk_idx); status_str.GetFirst().Ok() {
+		return status_str.GetSecond(), nil
+	}
+	panic("Fail to Get Historal State for Key " + key + " blk Idx " + strconv.Itoa(int(blk_idx)))
+	return "", nil
+}
+
+func (db *UStoreDB) GetTxnID(key string, blk_idx uint64) (string, error) {
+	if status_str := db.db.GetTxnID(key, blk_idx); status_str.GetFirst().Ok() {
+		return status_str.GetSecond(), nil
+	}
+	panic("Fail to Get TxnID for Key " + key + " blk Idx " + strconv.Itoa(int(blk_idx)))
+	return "", nil
+}
+
+func (db *UStoreDB) GetHistoricalStateVersion(key string, version string) (string, error) {
+	if status_str := db.db.GetHistoricalState(key, version); status_str.GetFirst().Ok() {
+		return status_str.GetSecond(), nil
+	}
+	panic("Fail to Get Historal State for Key " + key + " version " + version)
+	return "", nil
+}
+
+func (db *UStoreDB) GetTxnIDVersion(key string, version string) (string, error) {
+	if status_str := db.db.GetTxnID(key, version); status_str.GetFirst().Ok() {
+		return status_str.GetSecond(), nil
+	}
+	panic("Fail to Get TxnID for Key " + key + " version " + version)
+	return "", nil
+}
+
+func (db *UStoreDB) GetDeps(key string, blk_idx uint64) ([]string, []string, error) {
+	if status_vecptrstr := db.db.GetDeps(key, blk_idx); status_vecptrstr.GetFirst().Ok() {
+		vecptrstr := status_vecptrstr.GetSecond()
+		dep_keys := make([]string, vecptrstr.Size())
+		dep_versions := make([]string, vecptrstr.Size())
+
+		for i := 0; i < int(vecptrstr.Size()); i = i + 1 {
+			dep_keys[i] = vecptrstr.Get(i).GetFirst()
+			dep_versions[i] = vecptrstr.Get(i).GetSecond()
+		}
+		return dep_keys, dep_versions, nil
+	}
+	panic("Fail to Get Deps for Key " + key + " blk_idx " + strconv.Itoa(int(blk_idx)))
+	return nil, nil, nil
+}
+
+func (db *UStoreDB) GetDepsVersion(key string, version string) ([]string, []string, error) {
+	if status_vecptrstr := db.db.GetDeps(key, version); status_vecptrstr.GetFirst().Ok() {
+		vecptrstr := status_vecptrstr.GetSecond()
+		dep_keys := make([]string, vecptrstr.Size())
+		dep_versions := make([]string, vecptrstr.Size())
+
+		for i := 0; i < int(vecptrstr.Size()); i = i + 1 {
+			dep_keys[i] = vecptrstr.Get(i).GetFirst()
+			dep_versions[i] = vecptrstr.Get(i).GetSecond()
+		}
+		return dep_keys, dep_versions, nil
+	}
+	panic("Fail to Get Deps for Key " + key + " version " + version)
+	return nil, nil, nil
+}
 func (db *UStoreDB) GetState(key []byte) (string, error) {
 	var res ustore.PairStatusString
 	res = db.db.GetState(string(key))
@@ -113,6 +177,10 @@ func (db *UStoreDB) GetState(key []byte) (string, error) {
 		return res.GetSecond(), nil
 	}
 	return "", nil
+}
+
+func (db *UStoreDB) KVDB() *ustore.KVDB {
+	return &db.db
 }
 
 func (db *UStoreDB) PutState(key, value []byte, txnID string, deps [][]byte) error {

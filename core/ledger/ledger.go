@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"strconv"
 	"sync"
 	"time"
 
@@ -169,6 +170,67 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	return info, nil
 }
 
+func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
+	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
+	now := time.Now()
+	_, err := db.GetDBHandle().DB.GetHistoricalState(ccid_key, blk_idx)
+	duration := uint64(time.Since(now))
+	if err == nil {
+		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration)
+	} else {
+		ledgerLogger.Warningf("Fail to retrieve historical ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
+	}
+}
+
+func MeasureDep(ccid, key string, blk_idx uint64) {
+	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
+	now := time.Now()
+	_, _, err := db.GetDBHandle().DB.GetDeps(ccid_key, blk_idx)
+	duration := uint64(time.Since(now))
+	if err == nil {
+		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration)
+	} else {
+		ledgerLogger.Warningf("Fail to retrieve Deps ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
+	}
+}
+
+func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
+	startTime := time.Now()
+	long_key := string(statemgmt.ConstructCompositeKey(ccid, key))
+	dep_keys, dep_versions, err := db.GetDBHandle().DB.GetDeps(long_key, blk_idx)
+	if err != nil {
+		panic("Fail to get dependency for " + long_key + " at blk idx " + strconv.Itoa(int(blk_idx)))
+	}
+
+	for i := 1; i < int(level); i++ {
+		// ledgerLogger.Infof("Level %d:  # of Deps Keys = %d and versions = %d", i, len(dep_keys), len(dep_versions))
+		var next_dep_keys []string
+		var next_dep_versions []string
+
+		for ii, dep_key := range dep_keys {
+			dep_version := dep_versions[ii]
+			_, state_err := db.GetDBHandle().DB.GetHistoricalStateVersion(dep_key, dep_version)
+			if state_err == nil {
+				cur_dep_keys, cur_dep_versions, prov_err := db.GetDBHandle().DB.GetDepsVersion(dep_key, dep_version)
+				if prov_err == nil {
+					next_dep_keys = append(next_dep_keys, cur_dep_keys...)
+					next_dep_versions = append(next_dep_versions, cur_dep_versions...)
+				}
+			}
+		} // end for
+
+		dep_keys = make([]string, len(next_dep_keys))
+		copy(dep_keys, next_dep_keys)
+
+		dep_versions = make([]string, len(next_dep_versions))
+		copy(dep_versions, next_dep_versions)
+	} // end for level
+
+	duration := uint64(time.Since(startTime))
+	long_key = long_key + " " + strconv.Itoa(int(blk_idx))
+	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, duration)
+}
+
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
 // This function returns successfully iff the transactions details and state changes (that
 // may have happened during execution of this transaction-batch) have been committed to permanent storage
@@ -245,6 +307,49 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+
+	if newBlockNumber == 4095 {
+		ledgerLogger.Infof("Start Performing some prov queries.")
+		ledgerLogger.Infof("=========================================")
+		MeasureHistoricalState("smallbank", "checking_5", 4095)
+		MeasureHistoricalState("smallbank", "checking_5", 4095)
+		MeasureHistoricalState("smallbank", "checking_5", 4094)
+		MeasureHistoricalState("smallbank", "checking_5", 4092)
+		MeasureHistoricalState("smallbank", "checking_5", 4088)
+		MeasureHistoricalState("smallbank", "checking_5", 4080)
+		MeasureHistoricalState("smallbank", "checking_5", 4064)
+		MeasureHistoricalState("smallbank", "checking_5", 4032)
+		MeasureHistoricalState("smallbank", "checking_5", 3968)
+		MeasureHistoricalState("smallbank", "checking_5", 3840)
+		MeasureHistoricalState("smallbank", "checking_5", 3584)
+		MeasureHistoricalState("smallbank", "checking_5", 3072)
+		MeasureHistoricalState("smallbank", "checking_5", 2048)
+
+		MeasureDep("smallbank", "checking_5", 4095)
+		MeasureDep("smallbank", "checking_5", 4095)
+		MeasureDep("smallbank", "checking_5", 4094)
+		MeasureDep("smallbank", "checking_5", 4092)
+		MeasureDep("smallbank", "checking_5", 4088)
+		MeasureDep("smallbank", "checking_5", 4080)
+		MeasureDep("smallbank", "checking_5", 4064)
+		MeasureDep("smallbank", "checking_5", 4032)
+		MeasureDep("smallbank", "checking_5", 3968)
+		MeasureDep("smallbank", "checking_5", 3840)
+		MeasureDep("smallbank", "checking_5", 3584)
+		MeasureDep("smallbank", "checking_5", 3072)
+		MeasureDep("smallbank", "checking_5", 2048)
+
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 2)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 4)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 6)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 8)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 10)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 12)
+		// MeasureBFSLevel("smallbank", "checking_5", 1000, 14)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
+
 	return nil
 }
 

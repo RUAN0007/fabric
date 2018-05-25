@@ -9,9 +9,10 @@
 %}
 
 %template(PairStatusString) std::pair<ustore_kvdb::Status, std::string>;
+%template(PairStr) std::pair<std::string, std::string>;
 %template(VecStr) std::vector<std::string>;
-%template(MapStr) std::map<std::string, std::string>;
-%template(PairStatusMapStr) std::pair<ustore_kvdb::Status, std::map<std::string, std::string>>;
+%template(VectorPairStr)  std::vector<std::pair<std::string, std::string>>;
+%template(PairStatusVectorPairStr) std::pair<ustore_kvdb::Status, std::vector<std::pair<std::string, std::string>>>;
 
 namespace ustore_kvdb {
 %nodefaultctor Iterator;
@@ -47,10 +48,10 @@ class KVDB {
 
   std::pair<Status, std::string> GetTxnID(const std::string& key, const std::string& uuid);
 
-  std::pair<Status, std::map<std::string, std::string>>
+  std::pair<ustore_kvdb::Status, std::vector<std::pair<std::string, std::string>>>
     GetDeps(const std::string& key, unsigned long long blk_idx);
 
-  std::pair<Status, std::map<std::string, std::string>>
+  std::pair<ustore_kvdb::Status, std::vector<std::pair<std::string, std::string>>>
     GetDeps(const std::string& key, const std::string& uuid);
 };
 
