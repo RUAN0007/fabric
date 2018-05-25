@@ -172,39 +172,40 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	return info, nil
 }
 
-func GetHistoricalState(ccid, key string, blk_idx uint64) (string, bool) {
+func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool) {
 	it := db.GetDBHandle().GetStateCFIterator()
-	long_key1 := "hist_" + ccid + "_" + key + "_" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
+	long_key1 := "hist-" + ccid + "-" + key + "-" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
 
 	for it.Seek([]byte(long_key1)); it.Valid(); it.Prev() {
-		splits := strings.Split(string(it.Key().Data()), "_")
-		ledgerLogger.Infof("Splits: %v", splits)
+		splits := strings.Split(string(it.Key().Data()), "-")
+		// ledgerLogger.Infof("Splits: %v", splits)
 
 		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] != key {
 			ledgerLogger.Infof("Find Invalid Record")
-			return "", false
+			return "", 0, false
 		}
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			panic("Fail to parse index" + splits[3])
+			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			return "", 0, false
 		}
 
 		if uint64(retrieved_idx) <= blk_idx {
 			value := string(it.Value().Data())
-			return value, true
+			return value, uint64(retrieved_idx), true
 		}
 	}
-	return "", false
+	return "", 0, false
 }
 
 func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 	it := db.GetDBHandle().GetStateCFIterator()
-	long_key := "prov_" + ccid + "_" + key + "_" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
+	long_key := "prov-" + ccid + "-" + key + "-" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
 
 	for it.Seek([]byte(long_key)); it.Valid(); it.Prev() {
-		splits := strings.Split(string(it.Key().Data()), "_")
-		ledgerLogger.Infof("Splits: %v", splits)
+		splits := strings.Split(string(it.Key().Data()), "-")
+		// ledgerLogger.Infof("Splits: %v", splits)
 
 		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] != key {
 			ledgerLogger.Infof("Find Invalid Record")
@@ -213,7 +214,8 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			panic("Fail to parse index" + splits[3])
+			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			return "", nil, false
 		}
 
 		if uint64(retrieved_idx) <= blk_idx {
@@ -226,6 +228,72 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 		}
 	}
 	return "", nil, false
+}
+
+func MeasureTxnDeps(ccid, key string, blk_idx uint64) {
+	startTime := time.Now()
+	_, _, exists := GetTxnDeps(ccid, key, blk_idx)
+	duration := uint64(time.Since(startTime))
+	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
+
+	if !exists {
+		panic("Cannot find txn & dep " + long_key)
+	} else {
+		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, duration)
+	}
+}
+
+func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
+	startTime := time.Now()
+	_, _, exists := GetHistoricalState(ccid, key, blk_idx)
+	duration := uint64(time.Since(startTime))
+	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
+
+	if !exists {
+		panic("Cannot find historical state " + long_key)
+	} else {
+		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, duration)
+	}
+}
+
+func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
+	startTime := time.Now()
+
+	var keys []string
+	var blk_idxs []uint64
+
+	keys = append(keys, key)
+	blk_idxs = append(blk_idxs, blk_idx)
+
+	for i := 0; i < int(level); i++ {
+		// ledgerLogger.Infof("Level %d:  # of Deps Keys = %d and Idx = %d", i, len(keys), len(blk_idxs))
+		var tmp_keys []string
+		var tmp_blk_idxs []uint64
+
+		for ii, key := range keys {
+			cur_idx := blk_idxs[ii]
+			_, deps, prov_exists := GetTxnDeps(ccid, key, cur_idx)
+			if prov_exists {
+				for _, dep := range deps {
+					_, pre_idx, state_exists := GetHistoricalState(ccid, dep, cur_idx-1)
+					if state_exists {
+						tmp_keys = append(tmp_keys, dep)
+						tmp_blk_idxs = append(tmp_blk_idxs, pre_idx)
+					} // end if
+				} // end for
+			} // end if
+		} // end for
+
+		keys = make([]string, len(tmp_keys))
+		copy(keys, tmp_keys)
+
+		blk_idxs = make([]uint64, len(tmp_blk_idxs))
+		copy(blk_idxs, tmp_blk_idxs)
+	} // end for level
+
+	duration := uint64(time.Since(startTime))
+	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
+	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, duration)
 }
 
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
@@ -305,34 +373,35 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	// if newBlockNumber == 6 {
-	// 	ledgerLogger.Infof("Perform some prov queries.")
-	// 	prev_state, exists := GetHistoricalState("rcoin", "A", 5)
-	// 	if !exists {
-	// 		panic("Cannot find rcoin A5 historical state")
-	// 	} else {
-	// 		ledgerLogger.Infof("Historical State for A5: %s", prev_state)
-	// 	}
-	// 	txnID, deps, exists := GetTxnDeps("rcoin", "A", 5)
-	// 	if !exists {
-	// 		panic("Cannot find rcoin A5 txn and Dependency")
-	// 	} else {
-	// 		ledgerLogger.Infof("TxnID: %s and Deps: %v", txnID, deps)
-	// 	}
+	if newBlockNumber == 5010 {
+		ledgerLogger.Infof("Start Performing some prov queries.")
+		ledgerLogger.Infof("=========================================")
+		MeasureHistoricalState("smallbank", "checking_5", 5000)
+		MeasureHistoricalState("smallbank", "checking_5", 4500)
+		MeasureHistoricalState("smallbank", "checking_5", 4000)
+		MeasureHistoricalState("smallbank", "checking_5", 3500)
+		MeasureHistoricalState("smallbank", "checking_5", 3000)
+		MeasureHistoricalState("smallbank", "checking_5", 2500)
+		MeasureHistoricalState("smallbank", "checking_5", 2000)
 
-	// 	prev_state, exists = GetHistoricalState("rcoin", "A", 4)
-	// 	if !exists {
-	// 		panic("Cannot find rcoin A4 historical state")
-	// 	} else {
-	// 		ledgerLogger.Infof("Historical State for A4: %s", prev_state)
-	// 	}
-	// 	txnID, deps, exists = GetTxnDeps("rcoin", "A", 4)
-	// 	if !exists {
-	// 		panic("Cannot find rcoin A4 txn and Dependency")
-	// 	} else {
-	// 		ledgerLogger.Infof("TxnID: %s and Deps: %v", txnID, deps)
-	// 	}
-	// }
+		MeasureTxnDeps("smallbank", "checking_5", 5000)
+		MeasureTxnDeps("smallbank", "checking_5", 4500)
+		MeasureTxnDeps("smallbank", "checking_5", 4000)
+		MeasureTxnDeps("smallbank", "checking_5", 3500)
+		MeasureTxnDeps("smallbank", "checking_5", 3000)
+		MeasureTxnDeps("smallbank", "checking_5", 2500)
+		MeasureTxnDeps("smallbank", "checking_5", 2000)
+
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 2)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 4)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 6)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 8)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 10)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 12)
+		MeasureBFSLevel("smallbank", "checking_5", 5000, 14)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
 	return nil
 }
 
@@ -445,8 +514,8 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 	next_blk_idx := int(ledger.blockchain.getSize())
 	pad_blk_idx := lpad(strconv.Itoa(next_blk_idx), "0", 9)
 	ledgerLogger.Info("Pad Blk Idx: ", pad_blk_idx)
-	long_key1 := "hist_" + chaincodeID + "_" + key + "_" + pad_blk_idx
-	long_key2 := "prov_" + chaincodeID + "_" + key + "_" + pad_blk_idx
+	long_key1 := "hist-" + chaincodeID + "-" + key + "-" + pad_blk_idx
+	long_key2 := "prov-" + chaincodeID + "-" + key + "-" + pad_blk_idx
 	cf := db.GetDBHandle().StateCF
 	writeBatch.PutCF(cf, []byte(long_key1), value)
 
