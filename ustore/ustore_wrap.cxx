@@ -293,26 +293,19 @@ SWIGINTERN void std_vector_Sl_std_string_Sg__set(std::vector< std::string > *sel
                 else
                     throw std::out_of_range("vector index out of range");
             }
-SWIGINTERN std::string const &std_map_Sl_std_string_Sc_std_string_Sg__get(std::map< std::string,std::string > *self,std::string const &key){
-                std::map<std::string,std::string >::iterator i = self->find(key);
-                if (i != self->end())
-                    return i->second;
+SWIGINTERN std::vector< std::pair< std::string,std::string > >::const_reference std_vector_Sl_std_pair_Sl_std_string_Sc_std_string_Sg__Sg__get(std::vector< std::pair< std::string,std::string > > *self,int i){
+                int size = int(self->size());
+                if (i>=0 && i<size)
+                    return (*self)[i];
                 else
-                    throw std::out_of_range("key not found");
+                    throw std::out_of_range("vector index out of range");
             }
-SWIGINTERN void std_map_Sl_std_string_Sc_std_string_Sg__set(std::map< std::string,std::string > *self,std::string const &key,std::string const &x){
-                (*self)[key] = x;
-            }
-SWIGINTERN void std_map_Sl_std_string_Sc_std_string_Sg__del(std::map< std::string,std::string > *self,std::string const &key){
-                std::map<std::string,std::string >::iterator i = self->find(key);
-                if (i != self->end())
-                    self->erase(i);
+SWIGINTERN void std_vector_Sl_std_pair_Sl_std_string_Sc_std_string_Sg__Sg__set(std::vector< std::pair< std::string,std::string > > *self,int i,std::vector< std::pair< std::string,std::string > >::value_type const &val){
+                int size = int(self->size());
+                if (i>=0 && i<size)
+                    (*self)[i] = val;
                 else
-                    throw std::out_of_range("key not found");
-            }
-SWIGINTERN bool std_map_Sl_std_string_Sc_std_string_Sg__has_key(std::map< std::string,std::string > *self,std::string const &key){
-                std::map<std::string,std::string >::iterator i = self->find(key);
-                return i != self->end();
+                    throw std::out_of_range("vector index out of range");
             }
 #ifdef __cplusplus
 extern "C" {
@@ -824,6 +817,111 @@ void _wrap_delete_PairStatusString_ustore_b40e736282a5577d(std::pair< ustore_kvd
 }
 
 
+std::pair< std::string,std::string > *_wrap_new_PairStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::pair< std::string,std::string > *result = 0 ;
+  std::pair< std::string,std::string > *_swig_go_result;
+  
+  
+  result = (std::pair< std::string,std::string > *)new std::pair< std::string,std::string >();
+  *(std::pair< std::string,std::string > **)&_swig_go_result = (std::pair< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+std::pair< std::string,std::string > *_wrap_new_PairStr__SWIG_1_ustore_b40e736282a5577d(_gostring_ _swig_go_0, _gostring_ _swig_go_1) {
+  std::string arg1 ;
+  std::string arg2 ;
+  std::pair< std::string,std::string > *result = 0 ;
+  std::pair< std::string,std::string > *_swig_go_result;
+  
+  (&arg1)->assign(_swig_go_0.p, _swig_go_0.n); 
+  (&arg2)->assign(_swig_go_1.p, _swig_go_1.n); 
+  
+  result = (std::pair< std::string,std::string > *)new std::pair< std::string,std::string >(arg1,arg2);
+  *(std::pair< std::string,std::string > **)&_swig_go_result = (std::pair< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+std::pair< std::string,std::string > *_wrap_new_PairStr__SWIG_2_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0) {
+  std::pair< std::string,std::string > *arg1 = 0 ;
+  std::pair< std::string,std::string > *result = 0 ;
+  std::pair< std::string,std::string > *_swig_go_result;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (std::pair< std::string,std::string > *)new std::pair< std::string,std::string >((std::pair< std::string,std::string > const &)*arg1);
+  *(std::pair< std::string,std::string > **)&_swig_go_result = (std::pair< std::string,std::string > *)result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_PairStr_first_set_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::pair< std::string,std::string > *arg1 = (std::pair< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  if (arg1) (arg1)->first = *arg2;
+  
+}
+
+
+_gostring_ _wrap_PairStr_first_get_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0) {
+  std::pair< std::string,std::string > *arg1 = (std::pair< std::string,std::string > *) 0 ;
+  std::string *result = 0 ;
+  _gostring_ _swig_go_result;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (std::string *) & ((arg1)->first);
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
+  return _swig_go_result;
+}
+
+
+void _wrap_PairStr_second_set_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
+  std::pair< std::string,std::string > *arg1 = (std::pair< std::string,std::string > *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  if (arg1) (arg1)->second = *arg2;
+  
+}
+
+
+_gostring_ _wrap_PairStr_second_get_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0) {
+  std::pair< std::string,std::string > *arg1 = (std::pair< std::string,std::string > *) 0 ;
+  std::string *result = 0 ;
+  _gostring_ _swig_go_result;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  result = (std::string *) & ((arg1)->second);
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
+  return _swig_go_result;
+}
+
+
+void _wrap_delete_PairStr_ustore_b40e736282a5577d(std::pair< std::string,std::string > *_swig_go_0) {
+  std::pair< std::string,std::string > *arg1 = (std::pair< std::string,std::string > *) 0 ;
+  
+  arg1 = *(std::pair< std::string,std::string > **)&_swig_go_0; 
+  
+  delete arg1;
+  
+}
+
+
 std::vector< std::string > *_wrap_new_VecStr__SWIG_0_ustore_b40e736282a5577d() {
   std::vector< std::string > *result = 0 ;
   std::vector< std::string > *_swig_go_result;
@@ -978,122 +1076,135 @@ void _wrap_delete_VecStr_ustore_b40e736282a5577d(std::vector< std::string > *_sw
 }
 
 
-std::map< std::string,std::string > *_wrap_new_MapStr__SWIG_0_ustore_b40e736282a5577d() {
-  std::map< std::string,std::string > *result = 0 ;
-  std::map< std::string,std::string > *_swig_go_result;
+std::vector< std::pair< std::string,std::string > > *_wrap_new_VectorPairStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::vector< std::pair< std::string,std::string > > *result = 0 ;
+  std::vector< std::pair< std::string,std::string > > *_swig_go_result;
   
   
-  result = (std::map< std::string,std::string > *)new std::map< std::string,std::string >();
-  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  result = (std::vector< std::pair< std::string,std::string > > *)new std::vector< std::pair< std::string,std::string > >();
+  *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_result = (std::vector< std::pair< std::string,std::string > > *)result; 
   return _swig_go_result;
 }
 
 
-std::map< std::string,std::string > *_wrap_new_MapStr__SWIG_1_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
-  std::map< std::string,std::string > *arg1 = 0 ;
-  std::map< std::string,std::string > *result = 0 ;
-  std::map< std::string,std::string > *_swig_go_result;
+std::vector< std::pair< std::string,std::string > > *_wrap_new_VectorPairStr__SWIG_1_ustore_b40e736282a5577d(long long _swig_go_0) {
+  std::vector< std::pair< std::string,std::string > >::size_type arg1 ;
+  std::vector< std::pair< std::string,std::string > > *result = 0 ;
+  std::vector< std::pair< std::string,std::string > > *_swig_go_result;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = (size_t)_swig_go_0; 
   
-  result = (std::map< std::string,std::string > *)new std::map< std::string,std::string >((std::map< std::string,std::string > const &)*arg1);
-  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  result = (std::vector< std::pair< std::string,std::string > > *)new std::vector< std::pair< std::string,std::string > >(arg1);
+  *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_result = (std::vector< std::pair< std::string,std::string > > *)result; 
   return _swig_go_result;
 }
 
 
-intgo _wrap_MapStr_size_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  unsigned int result;
-  intgo _swig_go_result;
+long long _wrap_VectorPairStr_size_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > >::size_type result;
+  long long _swig_go_result;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
   
-  result = (unsigned int)((std::map< std::string,std::string > const *)arg1)->size();
+  result = ((std::vector< std::pair< std::string,std::string > > const *)arg1)->size();
   _swig_go_result = result; 
   return _swig_go_result;
 }
 
 
-bool _wrap_MapStr_empty_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+long long _wrap_VectorPairStr_capacity_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > >::size_type result;
+  long long _swig_go_result;
+  
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
+  
+  result = ((std::vector< std::pair< std::string,std::string > > const *)arg1)->capacity();
+  _swig_go_result = result; 
+  return _swig_go_result;
+}
+
+
+void _wrap_VectorPairStr_reserve_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0, long long _swig_go_1) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > >::size_type arg2 ;
+  
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = (size_t)_swig_go_1; 
+  
+  (arg1)->reserve(arg2);
+  
+}
+
+
+bool _wrap_VectorPairStr_isEmpty_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
   bool result;
   bool _swig_go_result;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
   
-  result = (bool)((std::map< std::string,std::string > const *)arg1)->empty();
+  result = (bool)((std::vector< std::pair< std::string,std::string > > const *)arg1)->empty();
   _swig_go_result = result; 
   return _swig_go_result;
 }
 
 
-void _wrap_MapStr_clear_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
+void _wrap_VectorPairStr_clear_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
   
   (arg1)->clear();
   
 }
 
 
-_gostring_ _wrap_MapStr_get_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *result = 0 ;
-  _gostring_ _swig_go_result;
+void _wrap_VectorPairStr_add_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0, std::pair< std::string,std::string > *_swig_go_1) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > >::value_type *arg2 = 0 ;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = *(std::vector< std::pair< std::string,std::string > >::value_type **)&_swig_go_1; 
   
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
+  (arg1)->push_back((std::vector< std::pair< std::string,std::string > >::value_type const &)*arg2);
   
+}
+
+
+std::pair< std::string,std::string > *_wrap_VectorPairStr_get_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0, intgo _swig_go_1) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  int arg2 ;
+  std::vector< std::pair< std::string,std::string > >::value_type *result = 0 ;
+  std::pair< std::string,std::string > *_swig_go_result;
+  
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
   
   try {
-    result = (std::string *) &std_map_Sl_std_string_Sc_std_string_Sg__get(arg1,(std::string const &)*arg2);
+    result = (std::vector< std::pair< std::string,std::string > >::value_type *) &std_vector_Sl_std_pair_Sl_std_string_Sc_std_string_Sg__Sg__get(arg1,arg2);
   }
   catch(std::out_of_range &_e) {
     _swig_gopanic((&_e)->what());
   }
   
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
+  *(std::vector< std::pair< std::string,std::string > >::value_type **)&_swig_go_result = result; 
   return _swig_go_result;
 }
 
 
-void _wrap_MapStr_set_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  std::string *arg2 = 0 ;
-  std::string *arg3 = 0 ;
+void _wrap_VectorPairStr_set_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0, intgo _swig_go_1, std::pair< std::string,std::string > *_swig_go_2) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
+  int arg2 ;
+  std::vector< std::pair< std::string,std::string > >::value_type *arg3 = 0 ;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
-  arg3 = &arg3_str;
-  
-  
-  std_map_Sl_std_string_Sc_std_string_Sg__set(arg1,(std::string const &)*arg2,(std::string const &)*arg3);
-  
-}
-
-
-void _wrap_MapStr_del_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  std::string *arg2 = 0 ;
-  
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  arg3 = *(std::vector< std::pair< std::string,std::string > >::value_type **)&_swig_go_2; 
   
   try {
-    std_map_Sl_std_string_Sc_std_string_Sg__del(arg1,(std::string const &)*arg2);
+    std_vector_Sl_std_pair_Sl_std_string_Sc_std_string_Sg__Sg__set(arg1,arg2,(std::pair< std::string,std::string > const &)*arg3);
   }
   catch(std::out_of_range &_e) {
     _swig_gopanic((&_e)->what());
@@ -1103,52 +1214,34 @@ void _wrap_MapStr_del_ustore_b40e736282a5577d(std::map< std::string,std::string 
 }
 
 
-bool _wrap_MapStr_has_key_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0, _gostring_ _swig_go_1) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  std::string *arg2 = 0 ;
-  bool result;
-  bool _swig_go_result;
+void _wrap_delete_VectorPairStr_ustore_b40e736282a5577d(std::vector< std::pair< std::string,std::string > > *_swig_go_0) {
+  std::vector< std::pair< std::string,std::string > > *arg1 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
   
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
-  
-  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
-  arg2 = &arg2_str;
-  
-  
-  result = (bool)std_map_Sl_std_string_Sc_std_string_Sg__has_key(arg1,(std::string const &)*arg2);
-  _swig_go_result = result; 
-  return _swig_go_result;
-}
-
-
-void _wrap_delete_MapStr_ustore_b40e736282a5577d(std::map< std::string,std::string > *_swig_go_0) {
-  std::map< std::string,std::string > *arg1 = (std::map< std::string,std::string > *) 0 ;
-  
-  arg1 = *(std::map< std::string,std::string > **)&_swig_go_0; 
+  arg1 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_0; 
   
   delete arg1;
   
 }
 
 
-std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_0_ustore_b40e736282a5577d() {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_wrap_new_PairStatusVectorPairStr__SWIG_0_ustore_b40e736282a5577d() {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_result;
   
   
-  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >();
-  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)new std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > >();
+  *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)result; 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::Status *_swig_go_0, std::map< std::string,std::string > *_swig_go_1) {
+std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_wrap_new_PairStatusVectorPairStr__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::Status *_swig_go_0, std::vector< std::pair< std::string,std::string > > *_swig_go_1) {
   ustore_kvdb::Status arg1 ;
-  std::map< std::string,std::string > arg2 ;
+  std::vector< std::pair< std::string,std::string > > arg2 ;
   ustore_kvdb::Status *argp1 ;
-  std::map< std::string,std::string > *argp2 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  std::vector< std::pair< std::string,std::string > > *argp2 ;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_result;
   
   
   argp1 = (ustore_kvdb::Status *)_swig_go_0;
@@ -1158,37 +1251,37 @@ std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_
   arg1 = (ustore_kvdb::Status)*argp1;
   
   
-  argp2 = (std::map< std::string,std::string > *)_swig_go_1;
+  argp2 = (std::vector< std::pair< std::string,std::string > > *)_swig_go_1;
   if (argp2 == NULL) {
-    _swig_gopanic("Attempt to dereference null std::map< std::string,std::string >");
+    _swig_gopanic("Attempt to dereference null std::vector< std::pair< std::string,std::string > >");
   }
-  arg2 = (std::map< std::string,std::string >)*argp2;
+  arg2 = (std::vector< std::pair< std::string,std::string > >)*argp2;
   
   
-  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(arg1,arg2);
-  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)new std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > >(arg1,arg2);
+  *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)result; 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_new_PairStatusMapStr__SWIG_2_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = 0 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *result = 0 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_wrap_new_PairStatusVectorPairStr__SWIG_2_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = 0 ;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *result = 0 ;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_result;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
   
-  result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >((std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > const &)*arg1);
-  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *)result; 
+  result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)new std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > >((std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > const &)*arg1);
+  *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_result = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *)result; 
   return _swig_go_result;
 }
 
 
-void _wrap_PairStatusMapStr_first_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0, ustore_kvdb::Status *_swig_go_1) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+void _wrap_PairStatusVectorPairStr_first_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0, ustore_kvdb::Status *_swig_go_1) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *) 0 ;
   ustore_kvdb::Status *arg2 = (ustore_kvdb::Status *) 0 ;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
   arg2 = *(ustore_kvdb::Status **)&_swig_go_1; 
   
   if (arg1) (arg1)->first = *arg2;
@@ -1196,12 +1289,12 @@ void _wrap_PairStatusMapStr_first_set_ustore_b40e736282a5577d(std::pair< ustore_
 }
 
 
-ustore_kvdb::Status *_wrap_PairStatusMapStr_first_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+ustore_kvdb::Status *_wrap_PairStatusVectorPairStr_first_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *) 0 ;
   ustore_kvdb::Status *result = 0 ;
   ustore_kvdb::Status *_swig_go_result;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
   
   result = (ustore_kvdb::Status *)& ((arg1)->first);
   *(ustore_kvdb::Status **)&_swig_go_result = (ustore_kvdb::Status *)result; 
@@ -1209,35 +1302,35 @@ ustore_kvdb::Status *_wrap_PairStatusMapStr_first_get_ustore_b40e736282a5577d(st
 }
 
 
-void _wrap_PairStatusMapStr_second_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0, std::map< std::string,std::string > *_swig_go_1) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
-  std::map< std::string,std::string > *arg2 = (std::map< std::string,std::string > *) 0 ;
+void _wrap_PairStatusVectorPairStr_second_set_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0, std::vector< std::pair< std::string,std::string > > *_swig_go_1) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > > *arg2 = (std::vector< std::pair< std::string,std::string > > *) 0 ;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
-  arg2 = *(std::map< std::string,std::string > **)&_swig_go_1; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
+  arg2 = *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_1; 
   
   if (arg1) (arg1)->second = *arg2;
   
 }
 
 
-std::map< std::string,std::string > *_wrap_PairStatusMapStr_second_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
-  std::map< std::string,std::string > *result = 0 ;
-  std::map< std::string,std::string > *_swig_go_result;
+std::vector< std::pair< std::string,std::string > > *_wrap_PairStatusVectorPairStr_second_get_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *) 0 ;
+  std::vector< std::pair< std::string,std::string > > *result = 0 ;
+  std::vector< std::pair< std::string,std::string > > *_swig_go_result;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
   
-  result = (std::map< std::string,std::string > *)& ((arg1)->second);
-  *(std::map< std::string,std::string > **)&_swig_go_result = (std::map< std::string,std::string > *)result; 
+  result = (std::vector< std::pair< std::string,std::string > > *)& ((arg1)->second);
+  *(std::vector< std::pair< std::string,std::string > > **)&_swig_go_result = (std::vector< std::pair< std::string,std::string > > *)result; 
   return _swig_go_result;
 }
 
 
-void _wrap_delete_PairStatusMapStr_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_0) {
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *arg1 = (std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *) 0 ;
+void _wrap_delete_PairStatusVectorPairStr_ustore_b40e736282a5577d(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_0) {
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *arg1 = (std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *) 0 ;
   
-  arg1 = *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_0; 
+  arg1 = *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_0; 
   
   delete arg1;
   
@@ -1623,12 +1716,12 @@ std::pair< ustore_kvdb::Status,std::string > *_wrap_KVDB_GetTxnID__SWIG_1_ustore
 }
 
 
-std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, long long _swig_go_2) {
+std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, long long _swig_go_2) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
   unsigned long long arg3 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > result;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > result;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_result;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
   
@@ -1638,17 +1731,17 @@ std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB
   arg3 = (unsigned long long)_swig_go_2; 
   
   result = (arg1)->GetDeps((std::string const &)*arg2,arg3);
-  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(result); 
+  *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > >(result); 
   return _swig_go_result;
 }
 
 
-std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
+std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1, _gostring_ _swig_go_2) {
   ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
   std::string *arg2 = 0 ;
   std::string *arg3 = 0 ;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > result;
-  std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_swig_go_result;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > result;
+  std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > *_swig_go_result;
   
   arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
   
@@ -1661,7 +1754,7 @@ std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > *_wrap_KVDB
   
   
   result = (arg1)->GetDeps((std::string const &)*arg2,(std::string const &)*arg3);
-  *(std::pair< ustore_kvdb::Status,std::map< std::string,std::string > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::map< std::string,std::string > >(result); 
+  *(std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > > **)&_swig_go_result = new std::pair< ustore_kvdb::Status,std::vector< std::pair< std::string,std::string > > >(result); 
   return _swig_go_result;
 }
 

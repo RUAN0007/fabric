@@ -231,28 +231,42 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 }
 
 func MeasureTxnDeps(ccid, key string, blk_idx uint64) {
-	startTime := time.Now()
-	_, _, exists := GetTxnDeps(ccid, key, blk_idx)
-	duration := uint64(time.Since(startTime))
+	var total_duration uint64 = 0
+	var exists bool = false
+	for i := 0; i < 10; i++ {
+		startTime := time.Now()
+		_, _, exists = GetTxnDeps(ccid, key, blk_idx)
+		if !exists {
+			break
+		}
+		total_duration += uint64(time.Since(startTime))
+	}
 	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
 
 	if !exists {
 		panic("Cannot find txn & dep " + long_key)
 	} else {
-		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, duration)
+		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, total_duration/10)
 	}
 }
 
 func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
-	startTime := time.Now()
-	_, _, exists := GetHistoricalState(ccid, key, blk_idx)
-	duration := uint64(time.Since(startTime))
+	var total_duration uint64 = 0
+	var exists bool = false
+	for i := 0; i < 10; i++ {
+		startTime := time.Now()
+		_, _, exists = GetHistoricalState(ccid, key, blk_idx)
+		if !exists {
+			break
+		}
+		total_duration += uint64(time.Since(startTime))
+	}
 	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
 
 	if !exists {
 		panic("Cannot find historical state " + long_key)
 	} else {
-		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, duration)
+		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, total_duration/10)
 	}
 }
 
@@ -373,35 +387,52 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	if newBlockNumber == 5010 {
-		ledgerLogger.Infof("Start Performing some prov queries.")
-		ledgerLogger.Infof("=========================================")
-		MeasureHistoricalState("smallbank", "checking_5", 5000)
-		MeasureHistoricalState("smallbank", "checking_5", 4500)
-		MeasureHistoricalState("smallbank", "checking_5", 4000)
-		MeasureHistoricalState("smallbank", "checking_5", 3500)
-		MeasureHistoricalState("smallbank", "checking_5", 3000)
-		MeasureHistoricalState("smallbank", "checking_5", 2500)
-		MeasureHistoricalState("smallbank", "checking_5", 2000)
+	// if newBlockNumber == 16383 {
+	// 	ledgerLogger.Infof("Start Performing some prov queries.")
+	// 	ledgerLogger.Infof("=========================================")
 
-		MeasureTxnDeps("smallbank", "checking_5", 5000)
-		MeasureTxnDeps("smallbank", "checking_5", 4500)
-		MeasureTxnDeps("smallbank", "checking_5", 4000)
-		MeasureTxnDeps("smallbank", "checking_5", 3500)
-		MeasureTxnDeps("smallbank", "checking_5", 3000)
-		MeasureTxnDeps("smallbank", "checking_5", 2500)
-		MeasureTxnDeps("smallbank", "checking_5", 2000)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16383)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16383)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16382)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16380)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16376)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16368)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16352)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16320)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16256)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 16128)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 15872)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 15360)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 14336)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 12288)
+	// 	MeasureHistoricalState("smallbank", "checking_5", 8192)
 
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 2)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 4)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 6)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 8)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 10)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 12)
-		MeasureBFSLevel("smallbank", "checking_5", 5000, 14)
-		ledgerLogger.Infof("=========================================")
-		panic("Stop here")
-	}
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16383)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16383)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16382)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16380)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16376)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16368)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16352)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16320)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16256)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 16128)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 15872)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 15360)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 14336)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 12288)
+	// 	MeasureTxnDeps("smallbank", "checking_5", 8192)
+
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 2)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 4)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 6)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 8)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 10)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 12)
+	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 14)
+	// 	ledgerLogger.Infof("=========================================")
+	// 	panic("Stop here")
+	// }
 	return nil
 }
 
