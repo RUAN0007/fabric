@@ -171,24 +171,39 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 }
 
 func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
+	var err error
+	var duration uint64 = 0
 	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
-	now := time.Now()
-	_, err := db.GetDBHandle().DB.GetHistoricalState(ccid_key, blk_idx)
-	duration := uint64(time.Since(now))
+	for i := 0; i < 10; i++ {
+		now := time.Now()
+		_, err = db.GetDBHandle().DB.GetHistoricalState(ccid_key, blk_idx)
+		if err != nil {
+			break
+		}
+		duration += uint64(time.Since(now))
+	}
 	if err == nil {
-		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration)
+		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
 	} else {
 		ledgerLogger.Warningf("Fail to retrieve historical ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
 	}
 }
 
 func MeasureDep(ccid, key string, blk_idx uint64) {
+	var err error
+	var duration uint64 = 0
 	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
-	now := time.Now()
-	_, _, err := db.GetDBHandle().DB.GetDeps(ccid_key, blk_idx)
-	duration := uint64(time.Since(now))
+
+	for i := 0; i < 10; i++ {
+		now := time.Now()
+		_, _, err = db.GetDBHandle().DB.GetDeps(ccid_key, blk_idx)
+		if err != nil {
+			break
+		}
+		duration += uint64(time.Since(now))
+	}
 	if err == nil {
-		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration)
+		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
 	} else {
 		ledgerLogger.Warningf("Fail to retrieve Deps ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
 	}
@@ -308,36 +323,41 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	if newBlockNumber == 4095 {
+	if newBlockNumber == 16383 {
 		ledgerLogger.Infof("Start Performing some prov queries.")
 		ledgerLogger.Infof("=========================================")
-		MeasureHistoricalState("smallbank", "checking_5", 4095)
-		MeasureHistoricalState("smallbank", "checking_5", 4095)
-		MeasureHistoricalState("smallbank", "checking_5", 4094)
-		MeasureHistoricalState("smallbank", "checking_5", 4092)
-		MeasureHistoricalState("smallbank", "checking_5", 4088)
-		MeasureHistoricalState("smallbank", "checking_5", 4080)
-		MeasureHistoricalState("smallbank", "checking_5", 4064)
-		MeasureHistoricalState("smallbank", "checking_5", 4032)
-		MeasureHistoricalState("smallbank", "checking_5", 3968)
-		MeasureHistoricalState("smallbank", "checking_5", 3840)
-		MeasureHistoricalState("smallbank", "checking_5", 3584)
-		MeasureHistoricalState("smallbank", "checking_5", 3072)
-		MeasureHistoricalState("smallbank", "checking_5", 2048)
 
-		MeasureDep("smallbank", "checking_5", 4095)
-		MeasureDep("smallbank", "checking_5", 4095)
-		MeasureDep("smallbank", "checking_5", 4094)
-		MeasureDep("smallbank", "checking_5", 4092)
-		MeasureDep("smallbank", "checking_5", 4088)
-		MeasureDep("smallbank", "checking_5", 4080)
-		MeasureDep("smallbank", "checking_5", 4064)
-		MeasureDep("smallbank", "checking_5", 4032)
-		MeasureDep("smallbank", "checking_5", 3968)
-		MeasureDep("smallbank", "checking_5", 3840)
-		MeasureDep("smallbank", "checking_5", 3584)
-		MeasureDep("smallbank", "checking_5", 3072)
-		MeasureDep("smallbank", "checking_5", 2048)
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16382)
+		MeasureHistoricalState("smallbank", "checking_5", 16380)
+		MeasureHistoricalState("smallbank", "checking_5", 16376)
+		MeasureHistoricalState("smallbank", "checking_5", 16368)
+		MeasureHistoricalState("smallbank", "checking_5", 16352)
+		MeasureHistoricalState("smallbank", "checking_5", 16320)
+		MeasureHistoricalState("smallbank", "checking_5", 16256)
+		MeasureHistoricalState("smallbank", "checking_5", 16128)
+		MeasureHistoricalState("smallbank", "checking_5", 15872)
+		MeasureHistoricalState("smallbank", "checking_5", 15360)
+		MeasureHistoricalState("smallbank", "checking_5", 14336)
+		MeasureHistoricalState("smallbank", "checking_5", 12288)
+		MeasureHistoricalState("smallbank", "checking_5", 8192)
+
+		MeasureDep("smallbank", "checking_5", 16383)
+		MeasureDep("smallbank", "checking_5", 16383)
+		MeasureDep("smallbank", "checking_5", 16382)
+		MeasureDep("smallbank", "checking_5", 16380)
+		MeasureDep("smallbank", "checking_5", 16376)
+		MeasureDep("smallbank", "checking_5", 16368)
+		MeasureDep("smallbank", "checking_5", 16352)
+		MeasureDep("smallbank", "checking_5", 16320)
+		MeasureDep("smallbank", "checking_5", 16256)
+		MeasureDep("smallbank", "checking_5", 16128)
+		MeasureDep("smallbank", "checking_5", 15872)
+		MeasureDep("smallbank", "checking_5", 15360)
+		MeasureDep("smallbank", "checking_5", 14336)
+		MeasureDep("smallbank", "checking_5", 12288)
+		MeasureDep("smallbank", "checking_5", 8192)
 
 		// MeasureBFSLevel("smallbank", "checking_5", 1000, 2)
 		// MeasureBFSLevel("smallbank", "checking_5", 1000, 4)
