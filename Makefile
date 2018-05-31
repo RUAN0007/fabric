@@ -72,7 +72,7 @@ PKGNAME = github.com/$(PROJECT_NAME)
 GO_LDFLAGS = -X github.com/hyperledger/fabric/metadata.Version=$(PROJECT_VERSION)
 
 #Add ustore_kv and boost here
-CGO_FLAGS = CGO_CFLAGS=" " CGO_LDFLAGS="-lustore_kv -lboost_system -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
+CGO_FLAGS = CGO_CFLAGS="" CGO_CPPFLAGS="-std=c++11" CGO_CXXFLAGS="-std=c++11" CGO_LDFLAGS="-lustore_kv -lboost_system -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy"
 UID = $(shell id -u)
 CHAINTOOL_RELEASE=v0.9.1
 
