@@ -178,8 +178,8 @@ func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool)
 
 	for it.Seek([]byte(long_key1)); it.Valid(); it.Prev() {
 		splits := strings.Split(string(it.Key().Data()), "-")
+		// ledgerLogger.Infof("Key: %s", string(it.Key().Data()))
 		// ledgerLogger.Infof("Splits: %v", splits)
-
 		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] != key {
 			ledgerLogger.Infof("Find Invalid Record")
 			return "", 0, false
@@ -386,6 +386,14 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+// 	 if newBlockNumber == 10 {
+// 	 	ledgerLogger.Infof("=========================================")
+// 	 	MeasureHistoricalState("smallbank", "checking_5", 10)
+// 	 	MeasureTxnDeps("smallbank", "checking_5", 10)
+// 	 	MeasureBFSLevel("smallbank", "checking_5", 10, 2)
+// 	 	ledgerLogger.Infof("=========================================")
+// 		panic("Stop here")
+//      }
 
 	 if newBlockNumber == 16383 {
 	 	ledgerLogger.Infof("Start Performing some prov queries.")
@@ -423,14 +431,14 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	 	MeasureTxnDeps("smallbank", "checking_5", 12288)
 	 	MeasureTxnDeps("smallbank", "checking_5", 8192)
 
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 2)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 4)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 6)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 8)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 10)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 12)
-	// 	MeasureBFSLevel("smallbank", "checking_5", 5000, 14)
-	// 	ledgerLogger.Infof("=========================================")
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
+	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
+	 	ledgerLogger.Infof("=========================================")
 	 	panic("Stop here")
 	 }
 	return nil
