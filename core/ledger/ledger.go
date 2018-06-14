@@ -152,6 +152,24 @@ func (ledger *Ledger) BeginTxBatch(id interface{}) error {
 	return nil
 }
 
+
+func MeasureLatencies(blk_num uint64) {
+	ledgerLogger.Infof("Provenance Query Blk %d", blk_num)
+	ledgerLogger.Infof("=========================================")
+
+	MeasureHistoricalState("smallbank", "checking_5", blk_num)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 1)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 3)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 7)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 15)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 31)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 63)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 127)
+
+	ledgerLogger.Infof("=========================================")
+}
+
 // GetTXBatchPreviewBlockInfo returns a preview block info that will
 // contain the same information as GetBlockchainInfo will return after
 // ledger.CommitTxBatch is called with the same parameters. If the
@@ -392,61 +410,35 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-// 	 if newBlockNumber == 10 {
-// 	 	ledgerLogger.Infof("=========================================")
-// 	 	MeasureHistoricalState("smallbank", "checking_5", 10)
-// 	 	MeasureTxnDeps("smallbank", "checking_5", 10)
-// 	 	MeasureBFSLevel("smallbank", "checking_5", 10, 2)
-// 	 	ledgerLogger.Infof("=========================================")
-// 		panic("Stop here")
-//      }
+	if newBlockNumber == 255 {
+	  MeasureLatencies(newBlockNumber)
+	}
 
-	 if newBlockNumber == 16383 {
-	 	ledgerLogger.Infof("Start Performing some prov queries.")
-	 	ledgerLogger.Infof("=========================================")
+	if newBlockNumber == 511 {
+	  MeasureLatencies(newBlockNumber)
+	}
 
-	 	MeasureHistoricalState("smallbank", "checking_5", 16383)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16383)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16382)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16380)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16376)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16368)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16352)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16320)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16256)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16128)
-	 	MeasureHistoricalState("smallbank", "checking_5", 15872)
-	 	MeasureHistoricalState("smallbank", "checking_5", 15360)
-	 	MeasureHistoricalState("smallbank", "checking_5", 14336)
-	 	MeasureHistoricalState("smallbank", "checking_5", 12288)
-	 	MeasureHistoricalState("smallbank", "checking_5", 8192)
+	if newBlockNumber == 1023 {
+	  MeasureLatencies(newBlockNumber)
+	}
 
-	 	MeasureTxnDeps("smallbank", "checking_5", 16383)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16383)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16382)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16380)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16376)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16368)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16352)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16320)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16256)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16128)
-	 	MeasureTxnDeps("smallbank", "checking_5", 15872)
-	 	MeasureTxnDeps("smallbank", "checking_5", 15360)
-	 	MeasureTxnDeps("smallbank", "checking_5", 14336)
-	 	MeasureTxnDeps("smallbank", "checking_5", 12288)
-	 	MeasureTxnDeps("smallbank", "checking_5", 8192)
+	if newBlockNumber == 2047 {
+	  MeasureLatencies(newBlockNumber)
+	}
 
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
-	 	ledgerLogger.Infof("=========================================")
-	 	panic("Stop here")
-	 }
+	if newBlockNumber == 4095 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 8191 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 16383 {
+        MeasureLatencies(newBlockNumber)
+		panic("Stop here")
+	}
+
 	return nil
 }
 
