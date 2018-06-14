@@ -20,10 +20,12 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+    "strconv"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/core/db"
+    "github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/state"
 	"github.com/hyperledger/fabric/events/producer"
@@ -31,6 +33,7 @@ import (
 	"github.com/tecbot/gorocksdb"
 
 	"github.com/hyperledger/fabric/protos"
+    "github.com/spf13/viper"
 	"golang.org/x/net/context"
 )
 
@@ -81,7 +84,8 @@ var (
 type Ledger struct {
 	blockchain *blockchain
 	state      *state.State
-	currentID  interface{}
+	currentID  interface{} 
+    statUtil   *util.StatUtil
 }
 
 var ledger *Ledger
@@ -92,6 +96,12 @@ var once sync.Once
 func GetLedger() (*Ledger, error) {
 	once.Do(func() {
 		ledger, ledgerError = GetNewLedger()
+		config := viper.New()
+		config.SetEnvPrefix("ledger") // variable is LEDGER_SAMPLE_INTERNVAL
+		config.AutomaticEnv()
+		sampleInterval := config.GetInt("sample_interval")
+		ledgerLogger.Infof("Sample interval : %v", sampleInterval)
+		ledger.statUtil.NewStat("block", uint32(sampleInterval))
 	})
 	return ledger, ledgerError
 }
@@ -104,7 +114,7 @@ func GetNewLedger() (*Ledger, error) {
 	}
 
 	state := state.NewState()
-	return &Ledger{blockchain, state, nil}, nil
+	return &Ledger{blockchain, state, nil, util.GetStatUtil()}, nil
 }
 
 /////////////////// Transaction-batch related methods ///////////////////////////////
@@ -185,11 +195,17 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	//store chaincode events directly in NonHashData. This will likely change in New Consensus where we can move them to Transaction
 	block.NonHashData = &protos.NonHashData{ChaincodeEvents: ccEvents}
 	newBlockNumber, err := ledger.blockchain.addPersistenceChangesForNewBlock(context.TODO(), block, stateHash, writeBatch)
+
 	if err != nil {
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
 		return err
 	}
+    if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
+		ledgerLogger.Infof("Block Interval: %v", lt)
+	}
+
+	ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
 	ledger.state.AddChangesForPersistence(newBlockNumber, writeBatch)
 	opt := gorocksdb.NewDefaultWriteOptions()
 	defer opt.Destroy()

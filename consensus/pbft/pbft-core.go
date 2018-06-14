@@ -23,8 +23,11 @@ import (
 	"sort"
 	"sync"
 	"time"
+    "strconv"
+
 
 	"github.com/hyperledger/fabric/consensus"
+    "github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/consensus/util/events"
 	_ "github.com/hyperledger/fabric/core" // Needed for logging format init
 	"github.com/op/go-logging"
@@ -171,6 +174,9 @@ type pbftCore struct {
 	checkpointStore map[Checkpoint]bool      // track checkpoints as set
 	viewChangeStore map[vcidx]*ViewChange    // track view-change messages
 	newViewStore    map[uint64]*NewView      // track last new-view we received or sent
+
+    statUtil        *util.StatUtil
+
 }
 
 type qidx struct {
@@ -308,6 +314,10 @@ func newPbftCore(id uint64, config *viper.Viper, consumer innerStack, etf events
 
 	instance.viewChangeSeqNo = ^uint64(0) // infinity
 	instance.updateViewChangeSeqNo()
+
+    instance.statUtil = util.GetStatUtil()
+    instance.statUtil.NewStat("consensus", 0)
+    instance.statUtil.NewStat("executionqueue", 0)
 
 	return instance
 }
@@ -620,6 +630,7 @@ func (instance *pbftCore) recvRequestBatch(reqBatch *RequestBatch) error {
 	}
 	if instance.primary(instance.view) == instance.id && instance.activeView {
 		instance.nullRequestTimer.Stop()
+  		instance.statUtil.Stats["consensus"].Start(digest)
 		instance.sendPrePrepare(reqBatch, digest)
 	} else {
 		logger.Debugf("Replica %d is backup, not sending pre-prepare for request batch %s", instance.id, digest)
@@ -738,6 +749,7 @@ func (instance *pbftCore) recvPrePrepare(preprep *PrePrepare) error {
 
 	cert.prePrepare = preprep
 	cert.digest = preprep.BatchDigest
+    instance.statUtil.Stats["consensus"].Start(preprep.BatchDigest)
 
 	// Store the request batch if, for whatever reason, we haven't received it from an earlier broadcast
 	if _, ok := instance.reqBatchStore[preprep.BatchDigest]; !ok && preprep.BatchDigest != "" {
@@ -850,6 +862,10 @@ func (instance *pbftCore) recvCommit(commit *Commit) error {
 	if instance.committed(commit.BatchDigest, commit.View, commit.SequenceNumber) {
 		instance.stopTimer()
 		instance.lastNewViewTimeout = instance.newViewTimeout
+
+      	if lt, ok := instance.statUtil.Stats["consensus"].End(commit.BatchDigest); ok {
+			logger.Infof("Consensus latency: %v", lt)
+		}
 		delete(instance.outstandingReqBatches, commit.BatchDigest)
 
 		instance.executeOutstanding()
@@ -960,6 +976,9 @@ func (instance *pbftCore) executeOne(idx msgID) bool {
 	} else {
 		logger.Infof("Replica %d executing/committing request batch for view=%d/seqNo=%d and digest %s",
 			instance.id, idx.v, idx.n, digest)
+
+        instance.statUtil.Stats["executionqueue"].Start(strconv.FormatUint(idx.n, 10))
+
 		// synchronously execute, it is the other side's responsibility to execute in the background if needed
 		instance.consumer.execute(idx.n, reqBatch)
 	}
