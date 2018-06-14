@@ -111,6 +111,7 @@ func GetLedger() (*Ledger, error) {
 		ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
 		ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
 		ledger.statUtil.NewStat("txn", uint32(sampleInterval))
+		ledger.statUtil.NewStat("block", uint32(sampleInterval))
 		ledger.nReads = 0
 		ledger.nWrites = 0
 		ledger.totalReadTime = 0
@@ -356,13 +357,18 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	//store chaincode events directly in NonHashData. This will likely change in New Consensus where we can move them to Transaction
 	block.NonHashData = &protos.NonHashData{ChaincodeEvents: ccEvents}
 	newBlockNumber, err := ledger.blockchain.addPersistenceChangesForNewBlock(context.TODO(), block, stateHash, writeBatch)
+
+    if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
+      ledgerLogger.Infof("Block Interval: %v", lt)
+    }
+
+    ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
 	if err != nil {
 		panic("Something wrong during commit...")
 		ledger.resetForNextTxGroup(false)
 		ledger.blockchain.blockPersistenceStatus(false)
 		return err
 	}
-
 	ledger.state.AddChangesForPersistence(newBlockNumber, writeBatch)
 	opt := gorocksdb.NewDefaultWriteOptions()
 	defer opt.Destroy()
