@@ -247,6 +247,24 @@ func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
 	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, duration)
 }
 
+func MeasureLatencies(blk_num uint64) {
+	ledgerLogger.Infof("Provenance Query Blk %d", blk_num)
+	ledgerLogger.Infof("=========================================")
+
+	MeasureHistoricalState("smallbank", "checking_5", blk_num)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 1)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 3)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 7)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 15)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 31)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 63)
+	MeasureHistoricalState("smallbank", "checking_5", blk_num - 127)
+
+	ledgerLogger.Infof("=========================================")
+
+}
+
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
 // This function returns successfully iff the transactions details and state changes (that
 // may have happened during execution of this transaction-batch) have been committed to permanent storage
@@ -329,50 +347,32 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
+	if newBlockNumber == 255 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 511 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 1023 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 2047 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 4095 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
+	if newBlockNumber == 8191 {
+	  MeasureLatencies(newBlockNumber)
+	}
+
 	if newBlockNumber == 16383 {
-		ledgerLogger.Infof("Start Performing some prov queries.")
-		ledgerLogger.Infof("=========================================")
-
-		MeasureHistoricalState("smallbank", "checking_5", 16383)
-		MeasureHistoricalState("smallbank", "checking_5", 16383)
-		MeasureHistoricalState("smallbank", "checking_5", 16382)
-		MeasureHistoricalState("smallbank", "checking_5", 16380)
-		MeasureHistoricalState("smallbank", "checking_5", 16376)
-		MeasureHistoricalState("smallbank", "checking_5", 16368)
-		MeasureHistoricalState("smallbank", "checking_5", 16352)
-		MeasureHistoricalState("smallbank", "checking_5", 16320)
-		MeasureHistoricalState("smallbank", "checking_5", 16256)
-		MeasureHistoricalState("smallbank", "checking_5", 16128)
-		MeasureHistoricalState("smallbank", "checking_5", 15872)
-		MeasureHistoricalState("smallbank", "checking_5", 15360)
-		MeasureHistoricalState("smallbank", "checking_5", 14336)
-		MeasureHistoricalState("smallbank", "checking_5", 12288)
-		MeasureHistoricalState("smallbank", "checking_5", 8192)
-
-		MeasureDep("smallbank", "checking_5", 16383)
-		MeasureDep("smallbank", "checking_5", 16383)
-		MeasureDep("smallbank", "checking_5", 16382)
-		MeasureDep("smallbank", "checking_5", 16380)
-		MeasureDep("smallbank", "checking_5", 16376)
-		MeasureDep("smallbank", "checking_5", 16368)
-		MeasureDep("smallbank", "checking_5", 16352)
-		MeasureDep("smallbank", "checking_5", 16320)
-		MeasureDep("smallbank", "checking_5", 16256)
-		MeasureDep("smallbank", "checking_5", 16128)
-		MeasureDep("smallbank", "checking_5", 15872)
-		MeasureDep("smallbank", "checking_5", 15360)
-		MeasureDep("smallbank", "checking_5", 14336)
-		MeasureDep("smallbank", "checking_5", 12288)
-		MeasureDep("smallbank", "checking_5", 8192)
-
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
-		ledgerLogger.Infof("=========================================")
+        MeasureLatencies(newBlockNumber)
 		panic("Stop here")
 	}
 
