@@ -21,16 +21,16 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
-  "strconv"
 
-  "github.com/hyperledger/fabric/a2m"
+	"github.com/hyperledger/fabric/a2m"
 	"github.com/hyperledger/fabric/consensus"
-	"github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/consensus/util/events"
 	_ "github.com/hyperledger/fabric/core" // Needed for logging format init
-	pb "github.com/hyperledger/fabric/protos"
+	"github.com/hyperledger/fabric/core/util"
+	// pb "github.com/hyperledger/fabric/protos"
 	"github.com/op/go-logging"
 
 	"github.com/golang/protobuf/proto"
@@ -146,7 +146,7 @@ type pbftCore struct {
 	pset          map[uint64]*ViewChange_PQ
 	qset          map[qidx]*ViewChange_PQ
 
-  a2m           a2m.A2MInterface
+	a2m               a2m.A2MInterface
 	skipInProgress    bool               // Set when we have detected a fall behind scenario until we pick a new starting point
 	stateTransferring bool               // Set when state transfer is executing
 	highStateTarget   *stateUpdateTarget // Set to the highest weak checkpoint cert we have observed
@@ -178,8 +178,8 @@ type pbftCore struct {
 	viewChangeStore map[vcidx]*ViewChange    // track view-change messages
 	newViewStore    map[uint64]*NewView      // track last new-view we received or sent
 
-  // stat
-  statUtil            *util.StatUtil
+	// stat
+	statUtil *util.StatUtil
 }
 
 type qidx struct {
@@ -236,16 +236,16 @@ func newPbftCore(id uint64, config *viper.Viper, consumer innerStack, etf events
 	instance.f = config.GetInt("general.f")
 	instance.sgx = config.GetBool("general.sgx")
 
-/*
-	if !instance.sgx {
-		if instance.f*3+1 != instance.N {
-			panic(fmt.Sprintf("need (exactly) %d replicas to tolerate %d byzantine faults, but %d replicas configured", instance.f*3+1, instance.f, instance.N))
+	/*
+		if !instance.sgx {
+			if instance.f*3+1 != instance.N {
+				panic(fmt.Sprintf("need (exactly) %d replicas to tolerate %d byzantine faults, but %d replicas configured", instance.f*3+1, instance.f, instance.N))
+			}
+		} else if instance.f*2+1 != instance.N {
+			panic(fmt.Sprintf("with SGX, need exactly %d replicas to tolerate %d faults, but %d replicas configured",
+				instance.f*2+1, instance.f, instance.N))
 		}
-	} else if instance.f*2+1 != instance.N {
-		panic(fmt.Sprintf("with SGX, need exactly %d replicas to tolerate %d faults, but %d replicas configured",
-			instance.f*2+1, instance.f, instance.N))
-	}
-*/
+	*/
 	instance.K = uint64(config.GetInt("general.K"))
 
 	instance.logMultiplier = uint64(config.GetInt("general.logmultiplier"))
@@ -328,10 +328,9 @@ func newPbftCore(id uint64, config *viper.Viper, consumer innerStack, etf events
 	instance.viewChangeSeqNo = ^uint64(0) // infinity
 	instance.updateViewChangeSeqNo()
 
-
-  instance.statUtil = util.GetStatUtil()
-  instance.statUtil.NewStat("consensus", 0)
-  instance.statUtil.NewStat("executionqueue", 0)
+	instance.statUtil = util.GetStatUtil()
+	instance.statUtil.NewStat("consensus", 0)
+	instance.statUtil.NewStat("executionqueue", 0)
 	return instance
 }
 
@@ -654,15 +653,6 @@ func (instance *pbftCore) recvRequestBatch(reqBatch *RequestBatch) error {
 	}
 	if instance.primary(instance.view) == instance.id && instance.activeView {
 		instance.nullRequestTimer.Stop()
-
-		for _, req := range reqBatch.GetBatch() {
-			tx := &pb.Transaction{}
-			if err := proto.Unmarshal(req.Payload, tx); err == nil {
-				if lt, ok := instance.statUtil.Stats["txqueue"].End(tx.Txid); ok {
-					logger.Infof("Tx queue time: %v", lt)
-				}
-			}
-		}
 		instance.statUtil.Stats["consensus"].Start(digest)
 		instance.sendPrePrepare(reqBatch, digest)
 	} else {
@@ -783,7 +773,7 @@ func (instance *pbftCore) recvPrePrepare(preprep *PrePrepare) error {
 	cert.prePrepare = preprep
 	cert.digest = preprep.BatchDigest
 
-  instance.statUtil.Stats["consensus"].Start(preprep.BatchDigest)
+	instance.statUtil.Stats["consensus"].Start(preprep.BatchDigest)
 	// Store the request batch if, for whatever reason, we haven't received it from an earlier broadcast
 	if _, ok := instance.reqBatchStore[preprep.BatchDigest]; !ok && preprep.BatchDigest != "" {
 		digest := hash(preprep.GetRequestBatch())

@@ -83,14 +83,10 @@ var (
 
 // Ledger - the struct for openchain ledger
 type Ledger struct {
-	blockchain     *blockchain
-	state          *state.State
-	currentID      interface{}
-	statUtil       *util.StatUtil
-	nReads         uint64 // number of read
-	nWrites        uint64 // number of write
-	totalReadTime  uint64 // read time
-	totalWriteTime uint64 // write time
+	blockchain *blockchain
+	state      *state.State
+	currentID  interface{}
+	statUtil   *util.StatUtil
 }
 
 var ledger *Ledger
@@ -106,14 +102,7 @@ func GetLedger() (*Ledger, error) {
 		config.AutomaticEnv()
 		sampleInterval := config.GetInt("sample_interval")
 		ledgerLogger.Infof("Sample interval : %v", sampleInterval)
-		ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
-		ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
-		ledger.statUtil.NewStat("txn", uint32(sampleInterval))
-        ledger.statUtil.NewStat("block", uint32(sampleInterval))
-		ledger.nReads = 0
-		ledger.nWrites = 0
-		ledger.totalReadTime = 0
-		ledger.totalWriteTime = 0
+		ledger.statUtil.NewStat("block", uint32(sampleInterval))
 		db.GetDBHandle().DB.InitGlobalState()
 	})
 	return ledger, ledgerError
@@ -127,14 +116,15 @@ func GetNewLedger() (*Ledger, error) {
 	}
 
 	state := state.NewState()
-	return &Ledger{blockchain, state, nil, util.GetStatUtil(), 0, 0, 0, 0}, nil
+	return &Ledger{blockchain, state, nil, util.GetStatUtil()}, nil
 }
 
 // Stat collection, querying via OpenChain REST API
 // Return (#reads, #writes, read time, write time)
 func (ledger *Ledger) GetDBStats() (uint64, uint64, uint64, uint64, uint64) {
-	dbsize := db.GetDBHandle().DB.GetSize()
-	return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
+	// dbsize := db.GetDBHandle().DB.GetSize()
+	// return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
+	return 0, 0, 0, 0, 0
 }
 
 /////////////////// Transaction-batch related methods ///////////////////////////////
@@ -293,10 +283,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	//store chaincode events directly in NonHashData. This will likely change in New Consensus where we can move them to Transaction
 	block.NonHashData = &protos.NonHashData{ChaincodeEvents: ccEvents}
 	newBlockNumber, err := ledger.blockchain.addPersistenceChangesForNewBlock(context.TODO(), block, stateHash, writeBatch)
-    if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
-      ledgerLogger.Infof("Block Interval: %v", lt)
-    }
-    ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
+	if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
+		ledgerLogger.Infof("Block Interval: %v", lt)
+	}
+	ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
 
 	if err != nil {
 		panic("Something wrong during commit...")
@@ -394,7 +384,6 @@ func (ledger *Ledger) RollbackTxBatch(id interface{}) error {
 
 // TxBegin - Marks the begin of a new transaction in the ongoing batch
 func (ledger *Ledger) TxBegin(txID string) {
-	ledger.statUtil.Stats["txn"].Start(txID)
 	ledger.state.TxBegin(txID)
 }
 
@@ -402,9 +391,6 @@ func (ledger *Ledger) TxBegin(txID string) {
 // If txSuccessful is false, the state changes made by the transaction are discarded
 func (ledger *Ledger) TxFinished(txID string, txSuccessful bool) {
 	ledger.state.TxFinish(txID, txSuccessful)
-	if val, ok := ledger.statUtil.Stats["txn"].End(txID); ok {
-		ledgerLogger.Infof("Txn Execution latency: %v", val)
-	}
 }
 
 /////////////////// world-state related methods /////////////////////////////////////
@@ -429,14 +415,7 @@ func (ledger *Ledger) GetTempStateHashWithTxDeltaStateHashes() ([]byte, map[stri
 // GetState get state for chaincodeID and key. If committed is false, this first looks in memory
 // and if missing, pulls from db.  If committed is true, this pulls from the db only.
 func (ledger *Ledger) GetState(chaincodeID string, key string, committed bool) ([]byte, error) {
-	ledger.statUtil.Stats["ledgerget"].Start(key)
-	ledger.nReads++
-	startTime := time.Now()
 	res, err := ledger.state.Get(chaincodeID, key, committed)
-	ledger.totalReadTime += uint64(time.Since(startTime))
-	if val, ok := ledger.statUtil.Stats["ledgerget"].End(key); ok {
-		ledgerLogger.Infof("GetState latency: %v", val)
-	}
 	return res, err
 }
 
@@ -456,15 +435,8 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
 	}
-	ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
-	ledger.statUtil.Stats["ledgerput"].Start(key)
-	ledger.nWrites++
-	startTime := time.Now()
+	// ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
 	res := ledger.state.Set(chaincodeID, key, value, deps)
-	ledger.totalWriteTime += uint64(time.Since(startTime))
-	if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
-		ledgerLogger.Infof("PutState latency: %v", val)
-	}
 	return res
 }
 
