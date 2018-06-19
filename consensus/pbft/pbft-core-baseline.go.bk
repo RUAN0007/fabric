@@ -30,6 +30,7 @@ import (
 	"github.com/hyperledger/fabric/consensus/util/events"
 	_ "github.com/hyperledger/fabric/core" // Needed for logging format init
 	"github.com/hyperledger/fabric/core/util"
+	pb "github.com/hyperledger/fabric/protos"
 	"github.com/op/go-logging"
 
 	"github.com/golang/protobuf/proto"
@@ -653,6 +654,14 @@ func (instance *pbftCore) recvRequestBatch(reqBatch *RequestBatch) error {
 	if instance.primary(instance.view) == instance.id && instance.activeView {
 		instance.nullRequestTimer.Stop()
 
+		for _, req := range reqBatch.GetBatch() {
+			tx := &pb.Transaction{}
+			if err := proto.Unmarshal(req.Payload, tx); err == nil {
+				if lt, ok := instance.statUtil.Stats["txqueue"].End(tx.Txid); ok {
+					logger.Infof("Tx queue time: %v", lt)
+				}
+			}
+		}
 		instance.statUtil.Stats["consensus"].Start(digest)
 		instance.sendPrePrepare(reqBatch, digest)
 	} else {

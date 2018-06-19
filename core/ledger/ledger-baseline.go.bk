@@ -27,13 +27,13 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/anh/tecbot/gorocksdb"
 	"github.com/hyperledger/fabric/core/db"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt"
 	"github.com/hyperledger/fabric/core/ledger/statemgmt/state"
 	"github.com/hyperledger/fabric/core/util"
 	"github.com/hyperledger/fabric/events/producer"
 	"github.com/op/go-logging"
-	"github.com/tecbot/gorocksdb"
 
 	"github.com/hyperledger/fabric/protos"
 	"github.com/spf13/viper"
@@ -328,6 +328,18 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	writeBatch := gorocksdb.NewWriteBatch()
 	defer writeBatch.Destroy()
 
+	cf := db.GetDBHandle().StateCF
+
+	for k, v := range ledger.hist_states {
+		writeBatch.PutCF(cf, []byte(k), v)
+	}
+
+	for k, v := range ledger.provs {
+		writeBatch.PutCF(cf, []byte(k), v)
+	}
+	ledger.hist_states = make(map[string][]byte)
+	ledger.provs = make(map[string][]byte)
+
 	block := protos.NewBlock(transactions, metadata)
 	ccEvents := []*protos.ChaincodeEvent{}
 
@@ -389,6 +401,61 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+	if newBlockNumber == 10 {
+		ledgerLogger.Infof("=========================================")
+		MeasureHistoricalState("smallbank", "checking_5", 10)
+		MeasureTxnDeps("smallbank", "checking_5", 10)
+		MeasureBFSLevel("smallbank", "checking_5", 10, 2)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
+
+	if newBlockNumber == 16383 {
+		ledgerLogger.Infof("Start Performing some prov queries.")
+		ledgerLogger.Infof("=========================================")
+
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16382)
+		MeasureHistoricalState("smallbank", "checking_5", 16380)
+		MeasureHistoricalState("smallbank", "checking_5", 16376)
+		MeasureHistoricalState("smallbank", "checking_5", 16368)
+		MeasureHistoricalState("smallbank", "checking_5", 16352)
+		MeasureHistoricalState("smallbank", "checking_5", 16320)
+		MeasureHistoricalState("smallbank", "checking_5", 16256)
+		MeasureHistoricalState("smallbank", "checking_5", 16128)
+		MeasureHistoricalState("smallbank", "checking_5", 15872)
+		MeasureHistoricalState("smallbank", "checking_5", 15360)
+		MeasureHistoricalState("smallbank", "checking_5", 14336)
+		MeasureHistoricalState("smallbank", "checking_5", 12288)
+		MeasureHistoricalState("smallbank", "checking_5", 8192)
+
+		MeasureTxnDeps("smallbank", "checking_5", 16383)
+		MeasureTxnDeps("smallbank", "checking_5", 16383)
+		MeasureTxnDeps("smallbank", "checking_5", 16382)
+		MeasureTxnDeps("smallbank", "checking_5", 16380)
+		MeasureTxnDeps("smallbank", "checking_5", 16376)
+		MeasureTxnDeps("smallbank", "checking_5", 16368)
+		MeasureTxnDeps("smallbank", "checking_5", 16352)
+		MeasureTxnDeps("smallbank", "checking_5", 16320)
+		MeasureTxnDeps("smallbank", "checking_5", 16256)
+		MeasureTxnDeps("smallbank", "checking_5", 16128)
+		MeasureTxnDeps("smallbank", "checking_5", 15872)
+		MeasureTxnDeps("smallbank", "checking_5", 15360)
+		MeasureTxnDeps("smallbank", "checking_5", 14336)
+		MeasureTxnDeps("smallbank", "checking_5", 12288)
+		MeasureTxnDeps("smallbank", "checking_5", 8192)
+
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
 	return nil
 }
 
@@ -467,12 +534,35 @@ type Prov struct {
 }
 
 // SetState sets state to given value for chaincodeID and key. Does not immideatly writes to DB
-func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte) error {
+func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, deps []string) error {
+
 	if key == "" || value == nil {
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
 	}
-	return ledger.state.Set(chaincodeID, key, value)
+	// ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
+	res := ledger.state.Set(chaincodeID, key, value)
+
+	next_blk_idx := int(ledger.blockchain.getSize())
+	pad_blk_idx := lpad(strconv.Itoa(next_blk_idx), "0", 9)
+	// ledgerLogger.Info("Pad Blk Idx: ", pad_blk_idx)
+	long_key1 := "hist-" + chaincodeID + "-" + key + "-" + pad_blk_idx
+	long_key2 := "prov-" + chaincodeID + "-" + key + "-" + pad_blk_idx
+	ledger.hist_states[long_key1] = value
+
+	var prov Prov
+	prov.TxnID = ledger.state.GetTxnID()
+	// ledgerLogger.Infof("Long Key1: %s, val: %s, txnID: %s", long_key1, string(value), prov.TxnID)
+	prov.Deps = make([]string, len(deps))
+	copy(prov.Deps, deps)
+	b, err := json.Marshal(prov)
+	if err != nil {
+		panic("Fail to marshal provenance")
+	}
+	ledger.provs[long_key2] = b
+
+	// ledgerLogger.Infof("Long Key2: %s", long_key2)
+	return res
 }
 
 // DeleteState tracks the deletion of state for chaincodeID and key. Does not immediately writes to DB
