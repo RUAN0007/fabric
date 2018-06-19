@@ -401,14 +401,14 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-	if newBlockNumber == 10 {
-		ledgerLogger.Infof("=========================================")
-		MeasureHistoricalState("smallbank", "checking_5", 10)
-		MeasureTxnDeps("smallbank", "checking_5", 10)
-		MeasureBFSLevel("smallbank", "checking_5", 10, 2)
-		ledgerLogger.Infof("=========================================")
-		panic("Stop here")
-	}
+// 	if newBlockNumber == 10 {
+// 		ledgerLogger.Infof("=========================================")
+// 		MeasureHistoricalState("smallbank", "checking_5", 10)
+// 		MeasureTxnDeps("smallbank", "checking_5", 10)
+// 		MeasureBFSLevel("smallbank", "checking_5", 10, 2)
+// 		ledgerLogger.Infof("=========================================")
+// 		panic("Stop here")
+// 	}
 
 	if newBlockNumber == 16383 {
 		ledgerLogger.Infof("Start Performing some prov queries.")
