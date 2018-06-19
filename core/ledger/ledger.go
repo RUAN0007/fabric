@@ -85,14 +85,13 @@ var (
 
 // Ledger - the struct for openchain ledger
 type Ledger struct {
-	blockchain     *blockchain
-	state          *state.State
-	currentID      interface{}
-	statUtil       *util.StatUtil
-	nReads         uint64 // number of read
-	nWrites        uint64 // number of write
-	totalReadTime  uint64 // read time
-	totalWriteTime uint64 // write time
+	blockchain *blockchain
+	state      *state.State
+	currentID  interface{}
+	statUtil   *util.StatUtil
+
+	hist_states map[string][]byte
+	provs       map[string][]byte
 }
 
 var ledger *Ledger
@@ -108,14 +107,10 @@ func GetLedger() (*Ledger, error) {
 		config.AutomaticEnv()
 		sampleInterval := config.GetInt("sample_interval")
 		ledgerLogger.Infof("Sample interval : %v", sampleInterval)
-		ledger.statUtil.NewStat("ledgerput", uint32(sampleInterval))
-		ledger.statUtil.NewStat("ledgerget", uint32(sampleInterval))
-		ledger.statUtil.NewStat("txn", uint32(sampleInterval))
 		ledger.statUtil.NewStat("block", uint32(sampleInterval))
-		ledger.nReads = 0
-		ledger.nWrites = 0
-		ledger.totalReadTime = 0
-		ledger.totalWriteTime = 0
+
+		ledger.hist_states = make(map[string][]byte)
+		ledger.provs = make(map[string][]byte)
 		// db.GetDBHandle().DB.InitGlobalState()
 	})
 	return ledger, ledgerError
@@ -129,14 +124,15 @@ func GetNewLedger() (*Ledger, error) {
 	}
 
 	state := state.NewState()
-	return &Ledger{blockchain, state, nil, util.GetStatUtil(), 0, 0, 0, 0}, nil
+	return &Ledger{blockchain, state, nil, util.GetStatUtil(), nil, nil}, nil
 }
 
 // Stat collection, querying via OpenChain REST API
 // Return (#reads, #writes, read time, write time)
 func (ledger *Ledger) GetDBStats() (uint64, uint64, uint64, uint64, uint64) {
-	dbsize := db.GetDBHandle().DB.GetSize()
-	return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
+	// dbsize := db.GetDBHandle().DB.GetSize()
+	// return ledger.nReads, ledger.nWrites, ledger.totalReadTime, ledger.totalWriteTime, dbsize
+	return 0, 0, 0, 0, 0
 }
 
 /////////////////// Transaction-batch related methods ///////////////////////////////
@@ -331,6 +327,19 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 
 	writeBatch := gorocksdb.NewWriteBatch()
 	defer writeBatch.Destroy()
+
+	cf := db.GetDBHandle().StateCF
+
+	for k, v := range ledger.hist_states {
+		writeBatch.PutCF(cf, []byte(k), v)
+	}
+
+	for k, v := range ledger.provs {
+		writeBatch.PutCF(cf, []byte(k), v)
+	}
+	ledger.hist_states = make(map[string][]byte)
+	ledger.provs = make(map[string][]byte)
+
 	block := protos.NewBlock(transactions, metadata)
 	ccEvents := []*protos.ChaincodeEvent{}
 
@@ -358,11 +367,11 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	block.NonHashData = &protos.NonHashData{ChaincodeEvents: ccEvents}
 	newBlockNumber, err := ledger.blockchain.addPersistenceChangesForNewBlock(context.TODO(), block, stateHash, writeBatch)
 
-    if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
-      ledgerLogger.Infof("Block Interval: %v", lt)
-    }
+	if lt, ok := ledger.statUtil.Stats["block"].End(strconv.FormatUint(newBlockNumber, 10)); ok {
+		ledgerLogger.Infof("Block Interval: %v", lt)
+	}
 
-    ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
+	ledger.statUtil.Stats["block"].Start(strconv.FormatUint(newBlockNumber+1, 10))
 	if err != nil {
 		panic("Something wrong during commit...")
 		ledger.resetForNextTxGroup(false)
@@ -392,61 +401,61 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-// 	 if newBlockNumber == 10 {
-// 	 	ledgerLogger.Infof("=========================================")
-// 	 	MeasureHistoricalState("smallbank", "checking_5", 10)
-// 	 	MeasureTxnDeps("smallbank", "checking_5", 10)
-// 	 	MeasureBFSLevel("smallbank", "checking_5", 10, 2)
-// 	 	ledgerLogger.Infof("=========================================")
-// 		panic("Stop here")
-//      }
+	if newBlockNumber == 10 {
+		ledgerLogger.Infof("=========================================")
+		MeasureHistoricalState("smallbank", "checking_5", 10)
+		MeasureTxnDeps("smallbank", "checking_5", 10)
+		MeasureBFSLevel("smallbank", "checking_5", 10, 2)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
 
-	 if newBlockNumber == 16383 {
-	 	ledgerLogger.Infof("Start Performing some prov queries.")
-	 	ledgerLogger.Infof("=========================================")
+	if newBlockNumber == 16383 {
+		ledgerLogger.Infof("Start Performing some prov queries.")
+		ledgerLogger.Infof("=========================================")
 
-	 	MeasureHistoricalState("smallbank", "checking_5", 16383)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16383)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16382)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16380)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16376)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16368)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16352)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16320)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16256)
-	 	MeasureHistoricalState("smallbank", "checking_5", 16128)
-	 	MeasureHistoricalState("smallbank", "checking_5", 15872)
-	 	MeasureHistoricalState("smallbank", "checking_5", 15360)
-	 	MeasureHistoricalState("smallbank", "checking_5", 14336)
-	 	MeasureHistoricalState("smallbank", "checking_5", 12288)
-	 	MeasureHistoricalState("smallbank", "checking_5", 8192)
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16383)
+		MeasureHistoricalState("smallbank", "checking_5", 16382)
+		MeasureHistoricalState("smallbank", "checking_5", 16380)
+		MeasureHistoricalState("smallbank", "checking_5", 16376)
+		MeasureHistoricalState("smallbank", "checking_5", 16368)
+		MeasureHistoricalState("smallbank", "checking_5", 16352)
+		MeasureHistoricalState("smallbank", "checking_5", 16320)
+		MeasureHistoricalState("smallbank", "checking_5", 16256)
+		MeasureHistoricalState("smallbank", "checking_5", 16128)
+		MeasureHistoricalState("smallbank", "checking_5", 15872)
+		MeasureHistoricalState("smallbank", "checking_5", 15360)
+		MeasureHistoricalState("smallbank", "checking_5", 14336)
+		MeasureHistoricalState("smallbank", "checking_5", 12288)
+		MeasureHistoricalState("smallbank", "checking_5", 8192)
 
-	 	MeasureTxnDeps("smallbank", "checking_5", 16383)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16383)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16382)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16380)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16376)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16368)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16352)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16320)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16256)
-	 	MeasureTxnDeps("smallbank", "checking_5", 16128)
-	 	MeasureTxnDeps("smallbank", "checking_5", 15872)
-	 	MeasureTxnDeps("smallbank", "checking_5", 15360)
-	 	MeasureTxnDeps("smallbank", "checking_5", 14336)
-	 	MeasureTxnDeps("smallbank", "checking_5", 12288)
-	 	MeasureTxnDeps("smallbank", "checking_5", 8192)
+		MeasureTxnDeps("smallbank", "checking_5", 16383)
+		MeasureTxnDeps("smallbank", "checking_5", 16383)
+		MeasureTxnDeps("smallbank", "checking_5", 16382)
+		MeasureTxnDeps("smallbank", "checking_5", 16380)
+		MeasureTxnDeps("smallbank", "checking_5", 16376)
+		MeasureTxnDeps("smallbank", "checking_5", 16368)
+		MeasureTxnDeps("smallbank", "checking_5", 16352)
+		MeasureTxnDeps("smallbank", "checking_5", 16320)
+		MeasureTxnDeps("smallbank", "checking_5", 16256)
+		MeasureTxnDeps("smallbank", "checking_5", 16128)
+		MeasureTxnDeps("smallbank", "checking_5", 15872)
+		MeasureTxnDeps("smallbank", "checking_5", 15360)
+		MeasureTxnDeps("smallbank", "checking_5", 14336)
+		MeasureTxnDeps("smallbank", "checking_5", 12288)
+		MeasureTxnDeps("smallbank", "checking_5", 8192)
 
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
-	 	MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
-	 	ledgerLogger.Infof("=========================================")
-	 	panic("Stop here")
-	 }
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
+		MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
+		ledgerLogger.Infof("=========================================")
+		panic("Stop here")
+	}
 	return nil
 }
 
@@ -465,7 +474,6 @@ func (ledger *Ledger) RollbackTxBatch(id interface{}) error {
 
 // TxBegin - Marks the begin of a new transaction in the ongoing batch
 func (ledger *Ledger) TxBegin(txID string) {
-	ledger.statUtil.Stats["txn"].Start(txID)
 	ledger.state.TxBegin(txID)
 }
 
@@ -473,9 +481,6 @@ func (ledger *Ledger) TxBegin(txID string) {
 // If txSuccessful is false, the state changes made by the transaction are discarded
 func (ledger *Ledger) TxFinished(txID string, txSuccessful bool) {
 	ledger.state.TxFinish(txID, txSuccessful)
-	if val, ok := ledger.statUtil.Stats["txn"].End(txID); ok {
-		ledgerLogger.Infof("Txn Execution latency: %v", val)
-	}
 }
 
 /////////////////// world-state related methods /////////////////////////////////////
@@ -501,14 +506,7 @@ func (ledger *Ledger) GetTempStateHashWithTxDeltaStateHashes() ([]byte, map[stri
 // GetState get state for chaincodeID and key. If committed is false, this first looks in memory
 // and if missing, pulls from db.  If committed is true, this pulls from the db only.
 func (ledger *Ledger) GetState(chaincodeID string, key string, committed bool) ([]byte, error) {
-	ledger.statUtil.Stats["ledgerget"].Start(key)
-	ledger.nReads++
-	startTime := time.Now()
 	res, err := ledger.state.Get(chaincodeID, key, committed)
-	ledger.totalReadTime += uint64(time.Since(startTime))
-	if val, ok := ledger.statUtil.Stats["ledgerget"].End(key); ok {
-		ledgerLogger.Infof("GetState latency: %v", val)
-	}
 	return res, err
 }
 
@@ -542,46 +540,28 @@ func (ledger *Ledger) SetState(chaincodeID string, key string, value []byte, dep
 		return newLedgerError(ErrorTypeInvalidArgument,
 			fmt.Sprintf("An empty string key or a nil value is not supported. Method invoked with key='%s', value='%#v'", key, value))
 	}
-	ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
-	ledger.statUtil.Stats["ledgerput"].Start(key)
-	ledger.nWrites++
-	startTime := time.Now()
+	// ledgerLogger.Infof("Put ccid %s Key %s for Val %s and Deps %v", chaincodeID, key, string(value), deps)
 	res := ledger.state.Set(chaincodeID, key, value)
-
-	ledger.totalWriteTime += uint64(time.Since(startTime))
-	if val, ok := ledger.statUtil.Stats["ledgerput"].End(key); ok {
-		ledgerLogger.Infof("PutState latency: %v", val)
-	}
-
-	writeBatch := gorocksdb.NewWriteBatch()
-	defer writeBatch.Destroy()
 
 	next_blk_idx := int(ledger.blockchain.getSize())
 	pad_blk_idx := lpad(strconv.Itoa(next_blk_idx), "0", 9)
-	ledgerLogger.Info("Pad Blk Idx: ", pad_blk_idx)
+	// ledgerLogger.Info("Pad Blk Idx: ", pad_blk_idx)
 	long_key1 := "hist-" + chaincodeID + "-" + key + "-" + pad_blk_idx
 	long_key2 := "prov-" + chaincodeID + "-" + key + "-" + pad_blk_idx
-	cf := db.GetDBHandle().StateCF
-	writeBatch.PutCF(cf, []byte(long_key1), value)
+	ledger.hist_states[long_key1] = value
 
 	var prov Prov
 	prov.TxnID = ledger.state.GetTxnID()
-	ledgerLogger.Infof("Long Key1: %s, val: %s, txnID: %s", long_key1, string(value), prov.TxnID)
+	// ledgerLogger.Infof("Long Key1: %s, val: %s, txnID: %s", long_key1, string(value), prov.TxnID)
 	prov.Deps = make([]string, len(deps))
 	copy(prov.Deps, deps)
 	b, err := json.Marshal(prov)
 	if err != nil {
 		panic("Fail to marshal provenance")
 	}
-	ledgerLogger.Infof("Long Key2: %s", long_key2)
-	writeBatch.PutCF(cf, []byte(long_key2), b)
+	ledger.provs[long_key2] = b
 
-	opt := gorocksdb.NewDefaultWriteOptions()
-	defer opt.Destroy()
-	dbErr := db.GetDBHandle().DB.Write(opt, writeBatch)
-	if dbErr != nil {
-		panic("Fail to write provenance stuff")
-	}
+	// ledgerLogger.Infof("Long Key2: %s", long_key2)
 	return res
 }
 
