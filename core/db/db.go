@@ -197,6 +197,16 @@ func (openchainDB *OpenchainDB) open() {
 	cfNames := []string{"default"}
 	cfNames = append(cfNames, columnfamilies...)
 	var cfOpts []*gorocksdb.Options
+
+	compression := viper.GetString("peer.db.compression")
+	if compression == "false" {
+		opts.SetCompression(gorocksdb.NoCompression)
+	    dbLogger.Info("Disable Compression")
+	} else {
+	  dbLogger.Infof("db compression is: %s", compression)
+	}
+
+
 	for range cfNames {
 		cfOpts = append(cfOpts, opts)
 	}
