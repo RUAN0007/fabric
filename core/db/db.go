@@ -205,7 +205,8 @@ func (openchainDB *OpenchainDB) open() {
 	} else {
 	  dbLogger.Infof("db compression is: %s", compression)
 	}
-
+	
+    opts.SetWriteBufferSize(1*1024*1024)
 
 	for range cfNames {
 		cfOpts = append(cfOpts, opts)
