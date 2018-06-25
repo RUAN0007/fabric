@@ -185,8 +185,18 @@ func (openchainDB *OpenchainDB) open() {
 		opts.SetInfoLogLevel(logLevel)
 	}
 
+    
+
 	opts.SetCreateIfMissing(missing)
 	opts.SetCreateIfMissingColumnFamilies(true)
+
+    compression := viper.GetString("peer.db.compression")
+	if compression == "false" {
+	    dbLogger.Info("Compression is off")
+		opts.SetCompression(gorocksdb.NoCompression)
+	}
+	dbLogger.Infof("db compression is: %s", compression)
+
 
 	cfNames := []string{"default"}
 	cfNames = append(cfNames, columnfamilies...)
