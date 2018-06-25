@@ -328,17 +328,17 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	writeBatch := gorocksdb.NewWriteBatch()
 	defer writeBatch.Destroy()
 
-	cf := db.GetDBHandle().StateCF
+//	cf := db.GetDBHandle().StateCF
 
-	for k, v := range ledger.hist_states {
-		writeBatch.PutCF(cf, []byte(k), v)
-	}
-
-	for k, v := range ledger.provs {
-		writeBatch.PutCF(cf, []byte(k), v)
-	}
-	ledger.hist_states = make(map[string][]byte)
-	ledger.provs = make(map[string][]byte)
+// 	for k, v := range ledger.hist_states {
+// 		writeBatch.PutCF(cf, []byte(k), v)
+// 	}
+// 
+// 	for k, v := range ledger.provs {
+// 		writeBatch.PutCF(cf, []byte(k), v)
+// 	}
+// 	ledger.hist_states = make(map[string][]byte)
+// 	ledger.provs = make(map[string][]byte)
 
 	block := protos.NewBlock(transactions, metadata)
 	ccEvents := []*protos.ChaincodeEvent{}
