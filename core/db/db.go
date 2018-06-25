@@ -193,6 +193,7 @@ func (openchainDB *OpenchainDB) open() {
 	if dbtype == "ustore" {
 		opts.SetDbType(dbtype)
 	}
+    opts.SetWriteBufferSize(1*1024*1024)
 	dbLogger.Infof("dbType is: %v", dbtype)
 	cfNames := []string{"default"}
 	cfNames = append(cfNames, columnfamilies...)
