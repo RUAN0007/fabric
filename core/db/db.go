@@ -82,6 +82,10 @@ func Stop() {
 	openchainDB.close()
 }
 
+func (openchainDB *OpenchainDB) OutputStorageInfo() {
+	openchainDB.DB.OutputStorageInfo()
+}
+
 // GetFromBlockchainCF get value for given key from column family - blockchainCF
 func (openchainDB *OpenchainDB) GetFromBlockchainCF(key []byte) ([]byte, error) {
 	return openchainDB.Get(openchainDB.BlockchainCF, key)

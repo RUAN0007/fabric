@@ -576,6 +576,11 @@ func (db *DB) GetState(key []byte) (*Slice, error) {
 	return NewUStoreSlice(val), nil
 }
 
+func (db *DB) OutputStorageInfo()  {
+	onlyUStore()
+	db.udb.OutputStorageInfo()
+}
+
 func (db *DB) GetBlock(key, version []byte) (*Slice, error) {
 	onlyUStore()
 	val, _ := db.udb.GetBlock(key, version)

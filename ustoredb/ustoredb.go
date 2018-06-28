@@ -252,6 +252,10 @@ func (db *UStoreDB) PutCF(cfh *ColumnFamilyHandle, key string, value string) err
 	}
 }
 
+func (db *UStoreDB) OutputStorageInfo() {
+  db.db.OutputChunkStorage()
+}
+
 func (db *UStoreDB) Write(writebatch *WriteBatch) error {
 	for k, v := range writebatch.updates {
 		db.cFamilies[k].db.Write(v)

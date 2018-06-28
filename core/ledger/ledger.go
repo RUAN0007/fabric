@@ -318,53 +318,13 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-
-	if newBlockNumber == 16383 {
-		ledgerLogger.Infof("Start Performing some prov queries.")
-		ledgerLogger.Infof("=========================================")
-
-		MeasureHistoricalState("smallbank", "checking_5", 16383)
-		MeasureHistoricalState("smallbank", "checking_5", 16383)
-		MeasureHistoricalState("smallbank", "checking_5", 16382)
-		MeasureHistoricalState("smallbank", "checking_5", 16380)
-		MeasureHistoricalState("smallbank", "checking_5", 16376)
-		MeasureHistoricalState("smallbank", "checking_5", 16368)
-		MeasureHistoricalState("smallbank", "checking_5", 16352)
-		MeasureHistoricalState("smallbank", "checking_5", 16320)
-		MeasureHistoricalState("smallbank", "checking_5", 16256)
-		MeasureHistoricalState("smallbank", "checking_5", 16128)
-		MeasureHistoricalState("smallbank", "checking_5", 15872)
-		MeasureHistoricalState("smallbank", "checking_5", 15360)
-		MeasureHistoricalState("smallbank", "checking_5", 14336)
-		MeasureHistoricalState("smallbank", "checking_5", 12288)
-		MeasureHistoricalState("smallbank", "checking_5", 8192)
-
-		MeasureDep("smallbank", "checking_5", 16383)
-		MeasureDep("smallbank", "checking_5", 16383)
-		MeasureDep("smallbank", "checking_5", 16382)
-		MeasureDep("smallbank", "checking_5", 16380)
-		MeasureDep("smallbank", "checking_5", 16376)
-		MeasureDep("smallbank", "checking_5", 16368)
-		MeasureDep("smallbank", "checking_5", 16352)
-		MeasureDep("smallbank", "checking_5", 16320)
-		MeasureDep("smallbank", "checking_5", 16256)
-		MeasureDep("smallbank", "checking_5", 16128)
-		MeasureDep("smallbank", "checking_5", 15872)
-		MeasureDep("smallbank", "checking_5", 15360)
-		MeasureDep("smallbank", "checking_5", 14336)
-		MeasureDep("smallbank", "checking_5", 12288)
-		MeasureDep("smallbank", "checking_5", 8192)
-
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 2)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 4)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 6)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 8)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 10)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 12)
-		MeasureBFSLevel("smallbank", "checking_5", 16383, 14)
-		ledgerLogger.Infof("=========================================")
-		panic("Stop here")
-	}
+    
+	if newBlockNumber % 100 == 0  && newBlockNumber > 0 {
+      db.GetDBHandle().DB.OutputStorageInfo()
+    }
+    if newBlockNumber > 1010 {
+      panic("Stop here")
+    }
 
 	return nil
 }

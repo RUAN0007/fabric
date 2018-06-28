@@ -8,7 +8,7 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
-// source: /home/ruanpingcheng/Desktop/gopath/src/ustore/ustore.i
+// source: /users/ruanpc/gopath/src/ustore/ustore.i
 
 package ustore
 
@@ -184,6 +184,7 @@ extern _Bool _wrap_KVDB_Exist_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_
 extern uintptr_t _wrap_KVDB_NewIterator_ustore_b40e736282a5577d(uintptr_t arg1);
 extern swig_type_46 _wrap_KVDB_GetSize_ustore_b40e736282a5577d(uintptr_t arg1);
 extern swig_type_47 _wrap_KVDB_GetCFName_ustore_b40e736282a5577d(uintptr_t arg1);
+extern void _wrap_KVDB_OutputChunkStorage_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_KVDB_InitGlobalState_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_KVDB_Commit_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_KVDB_GetState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_48 arg2);
@@ -1197,6 +1198,11 @@ func (arg1 SwigcptrKVDB) GetCFName() (_swig_ret string) {
 	return swig_r_1
 }
 
+func (arg1 SwigcptrKVDB) OutputChunkStorage() {
+	_swig_i_0 := arg1
+	C._wrap_KVDB_OutputChunkStorage_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0))
+}
+
 func (arg1 SwigcptrKVDB) InitGlobalState() (_swig_ret Status) {
 	var swig_r Status
 	_swig_i_0 := arg1
@@ -1414,6 +1420,7 @@ type KVDB interface {
 	NewIterator() (_swig_ret Iterator)
 	GetSize() (_swig_ret int64)
 	GetCFName() (_swig_ret string)
+	OutputChunkStorage()
 	InitGlobalState() (_swig_ret Status)
 	Commit() (_swig_ret PairStatusString)
 	GetState(arg2 string) (_swig_ret PairStatusString)
