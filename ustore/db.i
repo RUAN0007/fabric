@@ -30,6 +30,7 @@ class KVDB {
   Iterator* NewIterator();
   size_t GetSize();
   std::string GetCFName();
+  void OutputChunkStorage();
 
   Status InitGlobalState();
   std::pair<Status, std::string> Commit();
