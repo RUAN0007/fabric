@@ -318,7 +318,7 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-    
+    ledgerLogger.Infof("Number of blocks: %d", newBlockNumber) 
 	if newBlockNumber % 100 == 0  && newBlockNumber > 0 {
       db.GetDBHandle().DB.OutputStorageInfo()
     }
