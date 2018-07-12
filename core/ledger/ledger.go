@@ -157,15 +157,15 @@ func MeasureLatencies(blk_num uint64) {
 	ledgerLogger.Infof("Provenance Query Blk %d", blk_num)
 	ledgerLogger.Infof("=========================================")
 
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 1)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 3)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 7)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 15)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 31)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 63)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 127)
+	MeasureHistoricalState("ycsb", "user500", blk_num)
+	MeasureHistoricalState("ycsb", "user500", blk_num)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 1)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 3)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 7)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 15)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 31)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 63)
+	MeasureHistoricalState("ycsb", "user500", blk_num - 127)
 
 	ledgerLogger.Infof("=========================================")
 }
@@ -280,7 +280,7 @@ func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
 		}
 		total_duration += uint64(time.Since(startTime))
 	}
-	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
+	long_key := ccid + "-" + key + "-" + strconv.Itoa(int(blk_idx))
 
 	if !exists {
 		panic("Cannot find historical state " + long_key)
@@ -434,10 +434,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	  MeasureLatencies(newBlockNumber)
 	}
 
-	if newBlockNumber == 16383 {
-        MeasureLatencies(newBlockNumber)
-		panic("Stop here")
-	}
+// 	if newBlockNumber == 16383 {
+//         MeasureLatencies(newBlockNumber)
+// 		panic("Stop here")
+// 	}
 
 	return nil
 }
