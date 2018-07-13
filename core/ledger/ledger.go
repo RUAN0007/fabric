@@ -199,18 +199,18 @@ func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool)
 		splits := strings.Split(string(it.Key().Data()), "-")
 		// ledgerLogger.Infof("Key: %s", string(it.Key().Data()))
 		// ledgerLogger.Infof("Splits: %v", splits)
-		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] != key {
+		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] < key {
 			ledgerLogger.Infof("Find Invalid Record")
 			return "", 0, false
 		}
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			panic("Fail to parse index" + splits[3])
 			return "", 0, false
 		}
 
-		if uint64(retrieved_idx) <= blk_idx {
+		if splits[2] == key && uint64(retrieved_idx) <= blk_idx {
 			value := string(it.Value().Data())
 			return value, uint64(retrieved_idx), true
 		}
@@ -226,18 +226,18 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 		splits := strings.Split(string(it.Key().Data()), "-")
 		// ledgerLogger.Infof("Splits: %v", splits)
 
-		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] != key {
+		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] < key {
 			ledgerLogger.Infof("Find Invalid Record")
 			return "", nil, false
 		}
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			panic("Fail to parse index" + splits[3])
 			return "", nil, false
 		}
 
-		if uint64(retrieved_idx) <= blk_idx {
+		if splits[2] == key && uint64(retrieved_idx) <= blk_idx {
 			var prov Prov
 			err := json.Unmarshal(it.Value().Data(), &prov)
 			if err != nil {
@@ -410,8 +410,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
+
 	if newBlockNumber == 255 {
 	  MeasureLatencies(newBlockNumber)
+      panic("Stop here")
 	}
 
 	if newBlockNumber == 511 {
