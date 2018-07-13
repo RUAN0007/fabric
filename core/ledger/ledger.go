@@ -167,6 +167,9 @@ func MeasureLatencies(blk_num uint64) {
 	MeasureHistoricalState("ycsb", "user500", blk_num - 63)
 	MeasureHistoricalState("ycsb", "user500", blk_num - 127)
 
+    MeasureHistoricalScan("ycsb", "user500")
+    MeasureTxnScan("ycsb", "user500")
+
 	ledgerLogger.Infof("=========================================")
 }
 
@@ -190,6 +193,68 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	info := ledger.blockchain.getBlockchainInfoForBlock(ledger.blockchain.getSize()+1, block)
 	return info, nil
 }
+
+func HistoricalScan(ccid, key string) {
+	it := db.GetDBHandle().GetStateCFIterator()
+	long_key1 := "hist-" + ccid + "-" + key
+	for it.Seek([]byte(long_key1)); it.Valid(); it.Next() {
+		splits := strings.Split(string(it.Key().Data()), "-")
+		// ledgerLogger.Infof("Key: %s", string(it.Key().Data()))
+		// ledgerLogger.Infof("Splits: %v", splits)
+		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || key < splits[2] {
+          break
+		}
+	    it.Value().Data()
+	}
+}
+
+
+func TxnScan(ccid, key string) {
+	it := db.GetDBHandle().GetStateCFIterator()
+	long_key := "prov-" + ccid + "-" + key
+
+	for it.Seek([]byte(long_key)); it.Valid(); it.Next() {
+		splits := strings.Split(string(it.Key().Data()), "-")
+		// ledgerLogger.Infof("Splits: %v", splits)
+
+		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || key < splits[2]{
+          break
+		}
+
+		var prov Prov
+		err := json.Unmarshal(it.Value().Data(), &prov)
+		if err != nil {
+			panic("Fail to unmarshal the provenance record")
+		}
+	}
+}
+
+const MEASURE_TIMES = 10
+
+func MeasureHistoricalScan(ccid, key string) {
+	var total_duration uint64 = 0
+	for i := 0; i < MEASURE_TIMES; i++ {
+		startTime := time.Now()
+		HistoricalScan(ccid, key)
+		total_duration += uint64(time.Since(startTime))
+	}
+	long_key := ccid + "_" + key
+	ledgerLogger.Infof("Historical Scan Duration for  %s is %d", long_key, total_duration/MEASURE_TIMES)
+}
+
+
+
+func MeasureTxnScan(ccid, key string) {
+	var total_duration uint64 = 0
+	for i := 0; i < MEASURE_TIMES; i++ {
+		startTime := time.Now()
+		TxnScan(ccid, key)
+		total_duration += uint64(time.Since(startTime))
+	}
+	long_key := ccid + "_" + key
+	ledgerLogger.Infof("Txn Scan Duration for  %s is %d", long_key, total_duration/MEASURE_TIMES)
+}
+
 
 func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool) {
 	it := db.GetDBHandle().GetStateCFIterator()
@@ -252,7 +317,7 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 func MeasureTxnDeps(ccid, key string, blk_idx uint64) {
 	var total_duration uint64 = 0
 	var exists bool = false
-	for i := 0; i < 10; i++ {
+	for i := 0; i < MEASURE_TIMES; i++ {
 		startTime := time.Now()
 		_, _, exists = GetTxnDeps(ccid, key, blk_idx)
 		if !exists {
@@ -265,14 +330,14 @@ func MeasureTxnDeps(ccid, key string, blk_idx uint64) {
 	if !exists {
 		panic("Cannot find txn & dep " + long_key)
 	} else {
-		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, total_duration/10)
+		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, total_duration/MEASURE_TIMES)
 	}
 }
 
 func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
 	var total_duration uint64 = 0
 	var exists bool = false
-	for i := 0; i < 10; i++ {
+	for i := 0; i < MEASURE_TIMES; i++ {
 		startTime := time.Now()
 		_, _, exists = GetHistoricalState(ccid, key, blk_idx)
 		if !exists {
@@ -285,7 +350,7 @@ func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
 	if !exists {
 		panic("Cannot find historical state " + long_key)
 	} else {
-		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, total_duration/10)
+		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, total_duration/MEASURE_TIMES)
 	}
 }
 
@@ -411,9 +476,15 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
+
+// 	if newBlockNumber == 15 {
+//       MeasureHistoricalScan("ycsb", "user500")
+//       MeasureTxnScan("ycsb", "user500")
+//       panic("Stop here")
+//     }
+
 	if newBlockNumber == 255 {
 	  MeasureLatencies(newBlockNumber)
-      panic("Stop here")
 	}
 
 	if newBlockNumber == 511 {
