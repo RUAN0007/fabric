@@ -3,10 +3,8 @@ package ustoredb
 
 import (
 	"fmt"
-	"github.com/hyperledger/fabric/ustore"
-	"github.com/op/go-logging"
-	"strconv"
 	"sync"
+	"ustore"
 )
 
 // column family namespace
@@ -14,8 +12,6 @@ type ColumnFamilyHandle struct {
 	db   ustore.KVDB // pointer to DB partition
 	name string
 }
-
-var ulogger = logging.MustGetLogger("ustoreDB")
 
 // wrap write batch, indexed by ColumnFamily name
 type WriteBatch struct {
@@ -39,9 +35,9 @@ func Close(db *UStoreDB) {
 	ustore.DeleteKVDB(db.db)
 
 	/*
-	  for cf := range db.cFamilies {
-	    delete(db.cFamilies, cf)
-	  }*/
+	   for cf := range db.cFamilies {
+	     delete(db.cFamilies, cf)
+	   }*/
 }
 
 func NewWriteBatch() (*WriteBatch, error) {
@@ -98,7 +94,6 @@ func (db *UStoreDB) GetDB() ustore.KVDB {
 func (db *UStoreDB) GetSize() uint64 {
 	return uint64(db.db.GetSize())
 }
-
 func (db *UStoreDB) InitGlobalState() error {
 	if !db.db.InitGlobalState().Ok() {
 		panic("Failed to init global state")
@@ -106,80 +101,6 @@ func (db *UStoreDB) InitGlobalState() error {
 	return nil
 }
 
-func (db *UStoreDB) IterateState(key string) {
-  db.db.IterateState(key)
-}
-
-func (db *UStoreDB) IterateTxn(key string) {
-  db.db.IterateTxn(key)
-}
-
-
-
-
-func (db *UStoreDB) GetHistoricalState(key string, blk_idx uint64) (string, error) {
-	if status_str := db.db.GetHistoricalState(key, blk_idx); status_str.GetFirst().Ok() {
-		return status_str.GetSecond(), nil
-	}
-	panic("Fail to Get Historal State for Key " + key + " blk Idx " + strconv.Itoa(int(blk_idx)))
-	return "", nil
-}
-
-func (db *UStoreDB) GetTxnID(key string, blk_idx uint64) (string, error) {
-	if status_str := db.db.GetTxnID(key, blk_idx); status_str.GetFirst().Ok() {
-		return status_str.GetSecond(), nil
-	}
-	panic("Fail to Get TxnID for Key " + key + " blk Idx " + strconv.Itoa(int(blk_idx)))
-	return "", nil
-}
-
-func (db *UStoreDB) GetHistoricalStateVersion(key string, version string) (string, error) {
-	if status_str := db.db.GetHistoricalState(key, version); status_str.GetFirst().Ok() {
-		return status_str.GetSecond(), nil
-	}
-	panic("Fail to Get Historal State for Key " + key + " version " + version)
-	return "", nil
-}
-
-func (db *UStoreDB) GetTxnIDVersion(key string, version string) (string, error) {
-	if status_str := db.db.GetTxnID(key, version); status_str.GetFirst().Ok() {
-		return status_str.GetSecond(), nil
-	}
-	panic("Fail to Get TxnID for Key " + key + " version " + version)
-	return "", nil
-}
-
-func (db *UStoreDB) GetDeps(key string, blk_idx uint64) ([]string, []string, error) {
-	if status_vecptrstr := db.db.GetDeps(key, blk_idx); status_vecptrstr.GetFirst().Ok() {
-		vecptrstr := status_vecptrstr.GetSecond()
-		dep_keys := make([]string, vecptrstr.Size())
-		dep_versions := make([]string, vecptrstr.Size())
-
-		for i := 0; i < int(vecptrstr.Size()); i = i + 1 {
-			dep_keys[i] = vecptrstr.Get(i).GetFirst()
-			dep_versions[i] = vecptrstr.Get(i).GetSecond()
-		}
-		return dep_keys, dep_versions, nil
-	}
-	panic("Fail to Get Deps for Key " + key + " blk_idx " + strconv.Itoa(int(blk_idx)))
-	return nil, nil, nil
-}
-
-func (db *UStoreDB) GetDepsVersion(key string, version string) ([]string, []string, error) {
-	if status_vecptrstr := db.db.GetDeps(key, version); status_vecptrstr.GetFirst().Ok() {
-		vecptrstr := status_vecptrstr.GetSecond()
-		dep_keys := make([]string, vecptrstr.Size())
-		dep_versions := make([]string, vecptrstr.Size())
-
-		for i := 0; i < int(vecptrstr.Size()); i = i + 1 {
-			dep_keys[i] = vecptrstr.Get(i).GetFirst()
-			dep_versions[i] = vecptrstr.Get(i).GetSecond()
-		}
-		return dep_keys, dep_versions, nil
-	}
-	panic("Fail to Get Deps for Key " + key + " version " + version)
-	return nil, nil, nil
-}
 func (db *UStoreDB) GetState(key []byte) (string, error) {
 	var res ustore.PairStatusString
 	res = db.db.GetState(string(key))
@@ -191,15 +112,9 @@ func (db *UStoreDB) GetState(key []byte) (string, error) {
 	return "", nil
 }
 
-func (db *UStoreDB) KVDB() *ustore.KVDB {
-	return &db.db
-}
-
 func (db *UStoreDB) PutState(key, value []byte, txnID string, deps [][]byte) error {
-	dep_vec := ustore.NewVecStr()
-	ulogger.Infof("Key = %s, value = %s txnID = %s", string(key), string(value), txnID)
+	var dep_vec ustore.VecStr
 	for _, dep := range deps {
-		ulogger.Infof("dep: %s", string(dep))
 		dep_vec.Add(string(dep))
 	}
 	if !db.db.PutState(string(key), string(value), txnID, dep_vec) {

@@ -8,7 +8,7 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
-// source: /home/ruanpingcheng/Desktop/gopath/src/ustore/ustore.i
+// source: /users/ruanpc/gopath/src/ustore/ustore.i
 
 package ustore
 
@@ -84,22 +84,24 @@ typedef _gostring_ swig_type_53;
 typedef _gostring_ swig_type_54;
 typedef _gostring_ swig_type_55;
 typedef _gostring_ swig_type_56;
-typedef long long swig_type_57;
+typedef _gostring_ swig_type_57;
 typedef _gostring_ swig_type_58;
-typedef _gostring_ swig_type_59;
+typedef long long swig_type_59;
 typedef _gostring_ swig_type_60;
-typedef long long swig_type_61;
+typedef _gostring_ swig_type_61;
 typedef _gostring_ swig_type_62;
-typedef _gostring_ swig_type_63;
+typedef long long swig_type_63;
 typedef _gostring_ swig_type_64;
-typedef long long swig_type_65;
+typedef _gostring_ swig_type_65;
 typedef _gostring_ swig_type_66;
-typedef _gostring_ swig_type_67;
+typedef long long swig_type_67;
 typedef _gostring_ swig_type_68;
 typedef _gostring_ swig_type_69;
 typedef _gostring_ swig_type_70;
 typedef _gostring_ swig_type_71;
 typedef _gostring_ swig_type_72;
+typedef _gostring_ swig_type_73;
+typedef _gostring_ swig_type_74;
 extern void _wrap_Swig_free_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_Swig_malloc_ustore_b40e736282a5577d(swig_intgo arg1);
 extern uintptr_t _wrap_Status_OK_ustore_b40e736282a5577d(void);
@@ -184,31 +186,34 @@ extern _Bool _wrap_KVDB_Exist_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_
 extern uintptr_t _wrap_KVDB_NewIterator_ustore_b40e736282a5577d(uintptr_t arg1);
 extern swig_type_46 _wrap_KVDB_GetSize_ustore_b40e736282a5577d(uintptr_t arg1);
 extern swig_type_47 _wrap_KVDB_GetCFName_ustore_b40e736282a5577d(uintptr_t arg1);
+extern void _wrap_KVDB_IterateTxn_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_48 arg2);
+extern void _wrap_KVDB_IterateState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_49 arg2);
+extern void _wrap_KVDB_OutputChunkStorage_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_KVDB_InitGlobalState_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_KVDB_Commit_ustore_b40e736282a5577d(uintptr_t arg1);
-extern uintptr_t _wrap_KVDB_GetState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_48 arg2);
-extern _Bool _wrap_KVDB_PutState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_49 arg2, swig_type_50 arg3, swig_type_51 arg4, uintptr_t arg5);
-extern uintptr_t _wrap_KVDB_GetBlock_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_52 arg2, swig_type_53 arg3);
-extern uintptr_t _wrap_KVDB_PutBlock_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_54 arg2, swig_type_55 arg3);
-extern uintptr_t _wrap_KVDB_GetHistoricalState__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_56 arg2, swig_type_57 arg3);
-extern uintptr_t _wrap_KVDB_GetHistoricalState__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_58 arg2, swig_type_59 arg3);
-extern uintptr_t _wrap_KVDB_GetTxnID__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_60 arg2, swig_type_61 arg3);
-extern uintptr_t _wrap_KVDB_GetTxnID__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_62 arg2, swig_type_63 arg3);
-extern uintptr_t _wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_64 arg2, swig_type_65 arg3);
-extern uintptr_t _wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_66 arg2, swig_type_67 arg3);
+extern uintptr_t _wrap_KVDB_GetState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_50 arg2);
+extern _Bool _wrap_KVDB_PutState_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_51 arg2, swig_type_52 arg3, swig_type_53 arg4, uintptr_t arg5);
+extern uintptr_t _wrap_KVDB_GetBlock_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_54 arg2, swig_type_55 arg3);
+extern uintptr_t _wrap_KVDB_PutBlock_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_56 arg2, swig_type_57 arg3);
+extern uintptr_t _wrap_KVDB_GetHistoricalState__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_58 arg2, swig_type_59 arg3);
+extern uintptr_t _wrap_KVDB_GetHistoricalState__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_60 arg2, swig_type_61 arg3);
+extern uintptr_t _wrap_KVDB_GetTxnID__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_62 arg2, swig_type_63 arg3);
+extern uintptr_t _wrap_KVDB_GetTxnID__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_64 arg2, swig_type_65 arg3);
+extern uintptr_t _wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_66 arg2, swig_type_67 arg3);
+extern uintptr_t _wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_68 arg2, swig_type_69 arg3);
 extern void _wrap_delete_KVDB_ustore_b40e736282a5577d(uintptr_t arg1);
 extern void _wrap_delete_Iterator_ustore_b40e736282a5577d(uintptr_t arg1);
 extern swig_intgo _wrap_Iterator_GetTime_ustore_b40e736282a5577d(uintptr_t arg1);
 extern void _wrap_Iterator_Release_ustore_b40e736282a5577d(uintptr_t arg1);
-extern void _wrap_Iterator_SetRange_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_68 arg2, swig_type_69 arg3);
+extern void _wrap_Iterator_SetRange_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_70 arg2, swig_type_71 arg3);
 extern _Bool _wrap_Iterator_Valid_ustore_b40e736282a5577d(uintptr_t arg1);
 extern void _wrap_Iterator_SeekToFirst_ustore_b40e736282a5577d(uintptr_t arg1);
 extern void _wrap_Iterator_SeekToLast_ustore_b40e736282a5577d(uintptr_t arg1);
-extern void _wrap_Iterator_Seek_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_70 arg2);
+extern void _wrap_Iterator_Seek_ustore_b40e736282a5577d(uintptr_t arg1, swig_type_72 arg2);
 extern _Bool _wrap_Iterator_Next_ustore_b40e736282a5577d(uintptr_t arg1);
 extern _Bool _wrap_Iterator_Prev_ustore_b40e736282a5577d(uintptr_t arg1);
-extern swig_type_71 _wrap_Iterator_key_ustore_b40e736282a5577d(uintptr_t arg1);
-extern swig_type_72 _wrap_Iterator_value_ustore_b40e736282a5577d(uintptr_t arg1);
+extern swig_type_73 _wrap_Iterator_key_ustore_b40e736282a5577d(uintptr_t arg1);
+extern swig_type_74 _wrap_Iterator_value_ustore_b40e736282a5577d(uintptr_t arg1);
 extern uintptr_t _wrap_NewEmptyIterator_ustore_b40e736282a5577d(void);
 #undef intgo
 */
@@ -1197,6 +1202,29 @@ func (arg1 SwigcptrKVDB) GetCFName() (_swig_ret string) {
 	return swig_r_1
 }
 
+func (arg1 SwigcptrKVDB) IterateTxn(arg2 string) {
+	_swig_i_0 := arg1
+	_swig_i_1 := arg2
+	C._wrap_KVDB_IterateTxn_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_48)(unsafe.Pointer(&_swig_i_1)))
+	if Swig_escape_always_false {
+		Swig_escape_val = arg2
+	}
+}
+
+func (arg1 SwigcptrKVDB) IterateState(arg2 string) {
+	_swig_i_0 := arg1
+	_swig_i_1 := arg2
+	C._wrap_KVDB_IterateState_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_49)(unsafe.Pointer(&_swig_i_1)))
+	if Swig_escape_always_false {
+		Swig_escape_val = arg2
+	}
+}
+
+func (arg1 SwigcptrKVDB) OutputChunkStorage() {
+	_swig_i_0 := arg1
+	C._wrap_KVDB_OutputChunkStorage_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0))
+}
+
 func (arg1 SwigcptrKVDB) InitGlobalState() (_swig_ret Status) {
 	var swig_r Status
 	_swig_i_0 := arg1
@@ -1215,7 +1243,7 @@ func (arg1 SwigcptrKVDB) GetState(arg2 string) (_swig_ret PairStatusString) {
 	var swig_r PairStatusString
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetState_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_48)(unsafe.Pointer(&_swig_i_1)))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetState_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_50)(unsafe.Pointer(&_swig_i_1)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1229,7 +1257,7 @@ func (arg1 SwigcptrKVDB) PutState(arg2 string, arg3 string, arg4 string, arg5 Ve
 	_swig_i_2 := arg3
 	_swig_i_3 := arg4
 	_swig_i_4 := arg5.Swigcptr()
-	swig_r = (bool)(C._wrap_KVDB_PutState_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_49)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_50)(unsafe.Pointer(&_swig_i_2)), *(*C.swig_type_51)(unsafe.Pointer(&_swig_i_3)), C.uintptr_t(_swig_i_4)))
+	swig_r = (bool)(C._wrap_KVDB_PutState_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_51)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_52)(unsafe.Pointer(&_swig_i_2)), *(*C.swig_type_53)(unsafe.Pointer(&_swig_i_3)), C.uintptr_t(_swig_i_4)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1247,7 +1275,7 @@ func (arg1 SwigcptrKVDB) GetBlock(arg2 string, arg3 string) (_swig_ret PairStatu
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetBlock_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_52)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_53)(unsafe.Pointer(&_swig_i_2)))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetBlock_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_54)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_55)(unsafe.Pointer(&_swig_i_2)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1262,7 +1290,7 @@ func (arg1 SwigcptrKVDB) PutBlock(arg2 string, arg3 string) (_swig_ret PairStatu
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_PutBlock_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_54)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_55)(unsafe.Pointer(&_swig_i_2)))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_PutBlock_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_56)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_57)(unsafe.Pointer(&_swig_i_2)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1277,7 +1305,7 @@ func (arg1 SwigcptrKVDB) GetHistoricalState__SWIG_0(arg2 string, arg3 uint64) (_
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetHistoricalState__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_56)(unsafe.Pointer(&_swig_i_1)), C.swig_type_57(_swig_i_2))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetHistoricalState__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_58)(unsafe.Pointer(&_swig_i_1)), C.swig_type_59(_swig_i_2))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1289,7 +1317,7 @@ func (arg1 SwigcptrKVDB) GetHistoricalState__SWIG_1(arg2 string, arg3 string) (_
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetHistoricalState__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_58)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_59)(unsafe.Pointer(&_swig_i_2)))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetHistoricalState__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_60)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_61)(unsafe.Pointer(&_swig_i_2)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1319,7 +1347,7 @@ func (arg1 SwigcptrKVDB) GetTxnID__SWIG_0(arg2 string, arg3 uint64) (_swig_ret P
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetTxnID__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_60)(unsafe.Pointer(&_swig_i_1)), C.swig_type_61(_swig_i_2))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetTxnID__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_62)(unsafe.Pointer(&_swig_i_1)), C.swig_type_63(_swig_i_2))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1331,7 +1359,7 @@ func (arg1 SwigcptrKVDB) GetTxnID__SWIG_1(arg2 string, arg3 string) (_swig_ret P
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetTxnID__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_62)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_63)(unsafe.Pointer(&_swig_i_2)))))
+	swig_r = (PairStatusString)(SwigcptrPairStatusString(C._wrap_KVDB_GetTxnID__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_64)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_65)(unsafe.Pointer(&_swig_i_2)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1361,7 +1389,7 @@ func (arg1 SwigcptrKVDB) GetDeps__SWIG_0(arg2 string, arg3 uint64) (_swig_ret Pa
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusVectorPairStr)(SwigcptrPairStatusVectorPairStr(C._wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_64)(unsafe.Pointer(&_swig_i_1)), C.swig_type_65(_swig_i_2))))
+	swig_r = (PairStatusVectorPairStr)(SwigcptrPairStatusVectorPairStr(C._wrap_KVDB_GetDeps__SWIG_0_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_66)(unsafe.Pointer(&_swig_i_1)), C.swig_type_67(_swig_i_2))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1373,7 +1401,7 @@ func (arg1 SwigcptrKVDB) GetDeps__SWIG_1(arg2 string, arg3 string) (_swig_ret Pa
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (PairStatusVectorPairStr)(SwigcptrPairStatusVectorPairStr(C._wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_66)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_67)(unsafe.Pointer(&_swig_i_2)))))
+	swig_r = (PairStatusVectorPairStr)(SwigcptrPairStatusVectorPairStr(C._wrap_KVDB_GetDeps__SWIG_1_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_68)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_69)(unsafe.Pointer(&_swig_i_2)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1414,6 +1442,9 @@ type KVDB interface {
 	NewIterator() (_swig_ret Iterator)
 	GetSize() (_swig_ret int64)
 	GetCFName() (_swig_ret string)
+	IterateTxn(arg2 string)
+	IterateState(arg2 string)
+	OutputChunkStorage()
 	InitGlobalState() (_swig_ret Status)
 	Commit() (_swig_ret PairStatusString)
 	GetState(arg2 string) (_swig_ret PairStatusString)
@@ -1455,7 +1486,7 @@ func (arg1 SwigcptrIterator) SetRange(arg2 string, arg3 string) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	C._wrap_Iterator_SetRange_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_68)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_69)(unsafe.Pointer(&_swig_i_2)))
+	C._wrap_Iterator_SetRange_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_70)(unsafe.Pointer(&_swig_i_1)), *(*C.swig_type_71)(unsafe.Pointer(&_swig_i_2)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1484,7 +1515,7 @@ func (arg1 SwigcptrIterator) SeekToLast() {
 func (arg1 SwigcptrIterator) Seek(arg2 string) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_Iterator_Seek_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_70)(unsafe.Pointer(&_swig_i_1)))
+	C._wrap_Iterator_Seek_ustore_b40e736282a5577d(C.uintptr_t(_swig_i_0), *(*C.swig_type_72)(unsafe.Pointer(&_swig_i_1)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}

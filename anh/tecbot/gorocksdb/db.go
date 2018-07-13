@@ -526,7 +526,16 @@ func (db *DB) DropColumnFamily(c *ColumnFamilyHandle) error {
 func (db *DB) InitGlobalState() error {
 	onlyUStore()
 	return db.udb.InitGlobalState()
+}
 
+func (db *DB) IterateState(key string) {
+	onlyUStore()
+	db.udb.IterateState(key)
+}
+
+func (db *DB) IterateTxn(key string) {
+	onlyUStore()
+	db.udb.IterateTxn(key)
 }
 
 func (db *DB) GetHistoricalState(key string, blk_idx uint64) (string, error) {

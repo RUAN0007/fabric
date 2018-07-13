@@ -171,11 +171,13 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	return info, nil
 }
 
+const MEASURE_TIMES = 10
+
 func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
 	var err error
 	var duration uint64 = 0
 	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
-	for i := 0; i < 10; i++ {
+	for i := 0; i < MEASURE_TIMES; i++ {
 		now := time.Now()
 		_, err = db.GetDBHandle().DB.GetHistoricalState(ccid_key, blk_idx)
 		if err != nil {
@@ -184,10 +186,32 @@ func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
 		duration += uint64(time.Since(now))
 	}
 	if err == nil {
-		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
+		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/MEASURE_TIMES)
 	} else {
 		ledgerLogger.Warningf("Fail to retrieve historical ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
 	}
+}
+
+func MeasureIterateState(ccid, key string) {
+	var duration uint64 = 0
+	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
+	for i := 0; i < MEASURE_TIMES; i++ {
+		now := time.Now()
+		db.GetDBHandle().DB.IterateState(ccid_key)
+		duration += uint64(time.Since(now))
+	}
+    ledgerLogger.Infof("Iterate State ccid %s, key %s, duration: %d", ccid, key, duration/MEASURE_TIMES)
+}
+
+func MeasureIterateTxn(ccid, key string) {
+	var duration uint64 = 0
+	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
+	for i := 0; i < MEASURE_TIMES; i++ {
+		now := time.Now()
+		db.GetDBHandle().DB.IterateTxn(ccid_key)
+		duration += uint64(time.Since(now))
+	}
+    ledgerLogger.Infof("Iterate Txn ccid %s, key %s, duration: %d", ccid, key, duration/MEASURE_TIMES)
 }
 
 func MeasureDep(ccid, key string, blk_idx uint64) {
@@ -195,7 +219,7 @@ func MeasureDep(ccid, key string, blk_idx uint64) {
 	var duration uint64 = 0
 	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < MEASURE_TIMES; i++ {
 		now := time.Now()
 		_, _, err = db.GetDBHandle().DB.GetDeps(ccid_key, blk_idx)
 		if err != nil {
@@ -204,7 +228,7 @@ func MeasureDep(ccid, key string, blk_idx uint64) {
 		duration += uint64(time.Since(now))
 	}
 	if err == nil {
-		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
+		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/MEASURE_TIMES)
 	} else {
 		ledgerLogger.Warningf("Fail to retrieve Deps ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
 	}
@@ -260,6 +284,9 @@ func MeasureLatencies(blk_num uint64) {
 	MeasureHistoricalState("ycsb", "user500", blk_num - 31)
 	MeasureHistoricalState("ycsb", "user500", blk_num - 63)
 	MeasureHistoricalState("ycsb", "user500", blk_num - 127)
+
+	MeasureIterateState("ycsb", "user500")
+	MeasureIterateTxn("ycsb", "user500")
 
 	ledgerLogger.Infof("=========================================")
 
@@ -346,7 +373,7 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-
+    
 	if newBlockNumber == 255 {
 	  MeasureLatencies(newBlockNumber)
 	}

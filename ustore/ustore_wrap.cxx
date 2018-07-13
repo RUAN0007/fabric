@@ -8,7 +8,7 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
-// source: /home/ruanpingcheng/Desktop/gopath/src/ustore/ustore.i
+// source: /users/ruanpc/gopath/src/ustore/ustore.i
 
 #define SWIGMODULE ustore
 
@@ -1507,6 +1507,46 @@ _gostring_ _wrap_KVDB_GetCFName_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig
   result = (arg1)->GetCFName();
   _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
+}
+
+
+void _wrap_KVDB_IterateTxn_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  (arg1)->IterateTxn((std::string const &)*arg2);
+  
+}
+
+
+void _wrap_KVDB_IterateState_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0, _gostring_ _swig_go_1) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+  
+  
+  (arg1)->IterateState((std::string const &)*arg2);
+  
+}
+
+
+void _wrap_KVDB_OutputChunkStorage_ustore_b40e736282a5577d(ustore_kvdb::KVDB *_swig_go_0) {
+  ustore_kvdb::KVDB *arg1 = (ustore_kvdb::KVDB *) 0 ;
+  
+  arg1 = *(ustore_kvdb::KVDB **)&_swig_go_0; 
+  
+  (arg1)->OutputChunkStorage();
+  
 }
 
 
