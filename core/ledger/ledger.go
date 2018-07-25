@@ -153,23 +153,6 @@ func (ledger *Ledger) BeginTxBatch(id interface{}) error {
 }
 
 
-func MeasureLatencies(blk_num uint64) {
-	ledgerLogger.Infof("Provenance Query Blk %d", blk_num)
-	ledgerLogger.Infof("=========================================")
-
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 1)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 3)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 7)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 15)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 31)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 63)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 127)
-
-	ledgerLogger.Infof("=========================================")
-}
-
 // GetTXBatchPreviewBlockInfo returns a preview block info that will
 // contain the same information as GetBlockchainInfo will return after
 // ledger.CommitTxBatch is called with the same parameters. If the
@@ -224,7 +207,7 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 
 	for it.Seek([]byte(long_key)); it.Valid(); it.Prev() {
 		splits := strings.Split(string(it.Key().Data()), "-")
-		// ledgerLogger.Infof("Splits: %v", splits)
+		ledgerLogger.Infof("Splits: %v", splits)
 
 		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] != key {
 			ledgerLogger.Infof("Find Invalid Record")
@@ -247,46 +230,6 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 		}
 	}
 	return "", nil, false
-}
-
-func MeasureTxnDeps(ccid, key string, blk_idx uint64) {
-	var total_duration uint64 = 0
-	var exists bool = false
-	for i := 0; i < 10; i++ {
-		startTime := time.Now()
-		_, _, exists = GetTxnDeps(ccid, key, blk_idx)
-		if !exists {
-			break
-		}
-		total_duration += uint64(time.Since(startTime))
-	}
-	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
-
-	if !exists {
-		panic("Cannot find txn & dep " + long_key)
-	} else {
-		ledgerLogger.Infof("Dep Duration for  %s is %d", long_key, total_duration/10)
-	}
-}
-
-func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
-	var total_duration uint64 = 0
-	var exists bool = false
-	for i := 0; i < 10; i++ {
-		startTime := time.Now()
-		_, _, exists = GetHistoricalState(ccid, key, blk_idx)
-		if !exists {
-			break
-		}
-		total_duration += uint64(time.Since(startTime))
-	}
-	long_key := ccid + "_" + key + "_" + strconv.Itoa(int(blk_idx))
-
-	if !exists {
-		panic("Cannot find historical state " + long_key)
-	} else {
-		ledgerLogger.Infof("Historical Duration for  %s is %d", long_key, total_duration/10)
-	}
 }
 
 func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
@@ -410,33 +353,12 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-	if newBlockNumber == 255 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 511 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 1023 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 2047 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 4095 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 8191 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 16383 {
-        MeasureLatencies(newBlockNumber)
-		panic("Stop here")
+	if newBlockNumber == 160 {
+      MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, 1)
+      for level := 1; level <= 2; level++ {
+        MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, uint64(level))
+      }
+      panic("Stop here")
 	}
 
 	return nil
