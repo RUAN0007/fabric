@@ -171,44 +171,6 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	return info, nil
 }
 
-func MeasureHistoricalState(ccid, key string, blk_idx uint64) {
-	var err error
-	var duration uint64 = 0
-	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
-	for i := 0; i < 10; i++ {
-		now := time.Now()
-		_, err = db.GetDBHandle().DB.GetHistoricalState(ccid_key, blk_idx)
-		if err != nil {
-			break
-		}
-		duration += uint64(time.Since(now))
-	}
-	if err == nil {
-		ledgerLogger.Infof("Historical ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
-	} else {
-		ledgerLogger.Warningf("Fail to retrieve historical ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
-	}
-}
-
-func MeasureDep(ccid, key string, blk_idx uint64) {
-	var err error
-	var duration uint64 = 0
-	ccid_key := string(statemgmt.ConstructCompositeKey(ccid, key))
-
-	for i := 0; i < 10; i++ {
-		now := time.Now()
-		_, _, err = db.GetDBHandle().DB.GetDeps(ccid_key, blk_idx)
-		if err != nil {
-			break
-		}
-		duration += uint64(time.Since(now))
-	}
-	if err == nil {
-		ledgerLogger.Infof("Deps ccid %s, key %s, blk_idx %d, duration: %d", ccid, key, blk_idx, duration/10)
-	} else {
-		ledgerLogger.Warningf("Fail to retrieve Deps ccid %s, key %s, blk_idx %d", ccid, key, blk_idx)
-	}
-}
 
 func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
 	startTime := time.Now()
@@ -217,53 +179,37 @@ func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
 	if err != nil {
 		panic("Fail to get dependency for " + long_key + " at blk idx " + strconv.Itoa(int(blk_idx)))
 	}
+    MEASURE_TIMES := 1
+    total_duration := 0
+	
+    for j := 0; j < MEASURE_TIMES;j++ {
+    	for i := 1; i < int(level); i++ {
+    		// ledgerLogger.Infof("Level %d:  # of Deps Keys = %d and versions = %d", i, len(dep_keys), len(dep_versions))
+    		var next_dep_keys []string
+    		var next_dep_versions []string
+    
+    		for ii, dep_key := range dep_keys {
+    			dep_version := dep_versions[ii]
+    			_, state_err := db.GetDBHandle().DB.GetHistoricalStateVersion(dep_key, dep_version)
+    			if state_err == nil {
+    				cur_dep_keys, cur_dep_versions, prov_err := db.GetDBHandle().DB.GetDepsVersion(dep_key, dep_version)
+    				if prov_err == nil {
+    					next_dep_keys = append(next_dep_keys, cur_dep_keys...)
+    					next_dep_versions = append(next_dep_versions, cur_dep_versions...)
+    				} } } // end for
+    
+    		dep_keys = make([]string, len(next_dep_keys))
+    		copy(dep_keys, next_dep_keys)
+    
+    		dep_versions = make([]string, len(next_dep_versions))
+    		copy(dep_versions, next_dep_versions)
+    	} // end for level
+  	    duration := uint64(time.Since(startTime))
+        total_duration = total_duration + int(duration)
+    }
 
-	for i := 1; i < int(level); i++ {
-		// ledgerLogger.Infof("Level %d:  # of Deps Keys = %d and versions = %d", i, len(dep_keys), len(dep_versions))
-		var next_dep_keys []string
-		var next_dep_versions []string
-
-		for ii, dep_key := range dep_keys {
-			dep_version := dep_versions[ii]
-			_, state_err := db.GetDBHandle().DB.GetHistoricalStateVersion(dep_key, dep_version)
-			if state_err == nil {
-				cur_dep_keys, cur_dep_versions, prov_err := db.GetDBHandle().DB.GetDepsVersion(dep_key, dep_version)
-				if prov_err == nil {
-					next_dep_keys = append(next_dep_keys, cur_dep_keys...)
-					next_dep_versions = append(next_dep_versions, cur_dep_versions...)
-				}
-			}
-		} // end for
-
-		dep_keys = make([]string, len(next_dep_keys))
-		copy(dep_keys, next_dep_keys)
-
-		dep_versions = make([]string, len(next_dep_versions))
-		copy(dep_versions, next_dep_versions)
-	} // end for level
-
-	duration := uint64(time.Since(startTime))
 	long_key = long_key + " " + strconv.Itoa(int(blk_idx))
-	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, duration)
-}
-
-func MeasureLatencies(blk_num uint64) {
-	ledgerLogger.Infof("Provenance Query Blk %d", blk_num)
-	ledgerLogger.Infof("=========================================")
-
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 1)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 3)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 7)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 15)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 31)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 63)
-	MeasureHistoricalState("smallbank", "checking_5", blk_num - 127)
-
-	ledgerLogger.Infof("=========================================")
-
-}
+	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, total_duration / MEASURE_TIMES) }
 
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
 // This function returns successfully iff the transactions details and state changes (that
@@ -347,33 +293,15 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	if newBlockNumber == 255 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 511 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 1023 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 2047 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 4095 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 8191 {
-	  MeasureLatencies(newBlockNumber)
-	}
-
-	if newBlockNumber == 16383 {
-        MeasureLatencies(newBlockNumber)
-		panic("Stop here")
+	if newBlockNumber == 1600 {
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 2)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 3)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 4)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 5)
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 6)
+      panic("Stop here")
 	}
 
 	return nil
