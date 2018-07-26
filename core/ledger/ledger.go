@@ -174,6 +174,7 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 	return info, nil
 }
 
+
 func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool) {
 	it := db.GetDBHandle().GetStateCFIterator()
 	long_key1 := "hist-" + ccid + "-" + key + "-" + lpad(strconv.Itoa(int(blk_idx)), "0", 9)
@@ -182,18 +183,18 @@ func GetHistoricalState(ccid, key string, blk_idx uint64) (string, uint64, bool)
 		splits := strings.Split(string(it.Key().Data()), "-")
 		// ledgerLogger.Infof("Key: %s", string(it.Key().Data()))
 		// ledgerLogger.Infof("Splits: %v", splits)
-		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] != key {
+		if len(splits) != 4 || splits[0] != "hist" || splits[1] != ccid || splits[2] < key {
 			ledgerLogger.Infof("Find Invalid Record")
 			return "", 0, false
 		}
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			panic("Fail to parse index" + splits[3])
 			return "", 0, false
 		}
 
-		if uint64(retrieved_idx) <= blk_idx {
+		if splits[2] == key && uint64(retrieved_idx) <= blk_idx {
 			value := string(it.Value().Data())
 			return value, uint64(retrieved_idx), true
 		}
@@ -207,20 +208,20 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 
 	for it.Seek([]byte(long_key)); it.Valid(); it.Prev() {
 		splits := strings.Split(string(it.Key().Data()), "-")
-		ledgerLogger.Infof("Splits: %v", splits)
+		// ledgerLogger.Infof("Splits: %v", splits)
 
-		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] != key {
+		if len(splits) != 4 || splits[0] != "prov" || splits[1] != ccid || splits[2] < key {
 			ledgerLogger.Infof("Find Invalid Record")
 			return "", nil, false
 		}
 
 		retrieved_idx, err := strconv.Atoi(splits[3])
 		if err != nil {
-			ledgerLogger.Infof("Fail to parse index" + splits[3])
+			panic("Fail to parse index" + splits[3])
 			return "", nil, false
 		}
 
-		if uint64(retrieved_idx) <= blk_idx {
+		if splits[2] == key && uint64(retrieved_idx) <= blk_idx {
 			var prov Prov
 			err := json.Unmarshal(it.Value().Data(), &prov)
 			if err != nil {
@@ -231,6 +232,40 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 	}
 	return "", nil, false
 }
+
+
+func DFS(ccid, key string, blk_idx uint64, max_level uint64) {
+  var key_stack = []string{key}
+  blk_stack := []uint64{blk_idx}
+  level_stack := []uint64{0}
+
+  for true {
+    l := len(key_stack)
+    if l == 0 {break }
+    last_key, key_stack := key_stack[l-1], key_stack[:l-1]
+    last_blk, blk_stack := blk_stack[l-1], blk_stack[:l-1]
+    last_level, level_stack := level_stack[l-1], level_stack[:l-1]
+    
+    if (last_level == max_level) {break}
+
+    _, deps, prov_exists := GetTxnDeps(ccid, last_key, last_blk)
+    if prov_exists {
+    	for _, dep := range deps {
+    		_, pre_idx, state_exists := GetHistoricalState(ccid, dep, last_blk-1)
+    		if state_exists {
+              key_stack = append(key_stack, dep)
+              blk_stack = append(blk_stack, pre_idx)
+              level_stack = append(level_stack, last_level+1)
+    		} else {
+              panic("State should exist")
+            }
+    	} // end for
+    } else { 
+      panic("Provenance should exist. Otherwise, state doesnot exist")
+    } // end if
+  }  
+}
+
 
 func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
 	startTime := time.Now()
@@ -353,9 +388,8 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-	if newBlockNumber == 160 {
-      MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, 1)
-      for level := 1; level <= 2; level++ {
+	if newBlockNumber == 1600 {
+      for level := 1; level <= 6; level++ {
         MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, uint64(level))
       }
       panic("Stop here")
