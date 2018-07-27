@@ -234,36 +234,87 @@ func GetTxnDeps(ccid, key string, blk_idx uint64) (string, []string, bool) {
 }
 
 
-func DFS(ccid, key string, blk_idx uint64, max_level uint64) {
-  var key_stack = []string{key}
-  blk_stack := []uint64{blk_idx}
-  level_stack := []uint64{0}
+func DFS_Unionfind(ccid string,  max_level uint64, 
+         key1 string, blk_idx1 uint64, 
+         key2 string, blk_idx2 uint64) {
+  startTime := time.Now()
+  wqu := util.NewWeightedQuickUnion()
 
-  for true {
-    l := len(key_stack)
-    if l == 0 {break }
-    last_key, key_stack := key_stack[l-1], key_stack[:l-1]
-    last_blk, blk_stack := blk_stack[l-1], blk_stack[:l-1]
-    last_level, level_stack := level_stack[l-1], level_stack[:l-1]
-    
-    if (last_level == max_level) {break}
+  key_stack1 := []string{key1}
+  blk_stack1 := []uint64{blk_idx1}
+  level_stack1 := []uint64{0}
+  var last_key1 string
+  var last_blk1 uint64
+  var last_level1 uint64
 
-    _, deps, prov_exists := GetTxnDeps(ccid, last_key, last_blk)
-    if prov_exists {
-    	for _, dep := range deps {
-    		_, pre_idx, state_exists := GetHistoricalState(ccid, dep, last_blk-1)
-    		if state_exists {
-              key_stack = append(key_stack, dep)
-              blk_stack = append(blk_stack, pre_idx)
-              level_stack = append(level_stack, last_level+1)
-    		} else {
-              panic("State should exist")
-            }
-    	} // end for
-    } else { 
-      panic("Provenance should exist. Otherwise, state doesnot exist")
-    } // end if
-  }  
+  key_stack2 := []string{key2}
+  blk_stack2 := []uint64{blk_idx2}
+  level_stack2 := []uint64{0}
+  var last_key2 string
+  var last_blk2 uint64
+  var last_level2 uint64
+
+  for len(key_stack1) > 0 || len(key_stack2) > 0 {
+    l1 := len(key_stack1)
+
+    if l1 > 0 {
+      last_key1, key_stack1 = key_stack1[l1-1], key_stack1[:l1-1]
+      last_blk1, blk_stack1 = blk_stack1[l1-1], blk_stack1[:l1-1]
+      last_level1, level_stack1 = level_stack1[l1-1], level_stack1[:l1-1]
+      main_node := last_key1 + "_" + string(last_blk1)      
+
+     // ledgerLogger.Infof("Last Key: %s, Blk: %d, level: %d", last_key1, last_blk1, last_level1)
+
+      if (last_level1 < max_level) {
+        _, deps, prov_exists := GetTxnDeps(ccid, last_key1, last_blk1)
+        if !prov_exists {
+          panic("Provenance doesnot exist for key " + last_key1 + " at blk " + string(last_blk1))
+        }
+       	for _, dep := range deps {
+       		_, pre_idx, state_exists := GetHistoricalState(ccid, dep, last_blk1-1)
+      //      ledgerLogger.Infof("Dep Keys: %s and blk: %d", dep, pre_idx)
+
+       		if !state_exists {panic("State doesnot exist for key " + dep + " at blk " + string(pre_idx)) }
+            key_stack1 = append(key_stack1, dep)
+            blk_stack1 = append(blk_stack1, pre_idx)
+            level_stack1 = append(level_stack1, last_level1+1)
+
+            node := dep + "_" + string(pre_idx)      
+            wqu.Union(main_node, node)
+       	} // end for dep
+      }  //end if last_level1
+    }  // end if l1
+
+    l2 := len(key_stack2)
+    if l2 > 0 {
+      last_key2, key_stack2 = key_stack2[l2-1], key_stack2[:l2-1]
+      last_blk2, blk_stack2 = blk_stack2[l2-1], blk_stack2[:l2-1]
+      last_level2, level_stack2 = level_stack2[l2-1], level_stack2[:l2-1]
+      main_node := last_key2 + "_" + string(last_blk2)      
+      if (last_level2 < max_level) {
+        _, deps, prov_exists := GetTxnDeps(ccid, last_key2, last_blk2)
+        if !prov_exists {
+          panic("Provenance doesnot exist for key " + last_key2 + " at blk " + string(last_blk2))
+        }
+       	for _, dep := range deps {
+       		_, pre_idx, state_exists := GetHistoricalState(ccid, dep, last_blk2-1)
+       		if !state_exists {panic("State doesnot exist for key " + dep + " at blk " + string(pre_idx)) }
+            key_stack2 = append(key_stack2, dep)
+            blk_stack2 = append(blk_stack2, pre_idx)
+            level_stack2 = append(level_stack2, last_level2+1)
+
+            node := dep + "_" + string(pre_idx)      
+            wqu.Union(main_node, node)
+       	} // end for dep
+      }  //end if last_level2
+    }  // end if l2
+  }  // end for 
+
+  duration := uint64(time.Since(startTime))
+  long_key1 := key1 + "_" + string(blk_idx1)
+  long_key2 := key2 + "_" + string(blk_idx2)
+  connected := wqu.Connected(long_key1, long_key2)
+  ledgerLogger.Infof("Connected(%s, %s)=%d, with max level = %d and duration = %d", long_key1, long_key2, connected, max_level, duration)
 }
 
 
@@ -388,9 +439,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-	if newBlockNumber == 1600 {
+	if newBlockNumber == 160 {
       for level := 1; level <= 6; level++ {
-        MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, uint64(level))
+        // MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, uint64(level))
+        DFS_Unionfind("supplychain", uint64(level), "Phone_0", uint64(newBlockNumber), "Phone_1", uint64(newBlockNumber))
       }
       panic("Stop here")
 	}
