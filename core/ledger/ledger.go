@@ -214,7 +214,7 @@ func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
 
 
 
-func DFS(ccid string, max_level uint64, 
+func UnionFind_DFS(ccid string, max_level uint64, 
          key1 string, blk_idx1 uint64,
          key2 string, blk_idx2 uint64) {
   startTime := time.Now()
@@ -225,7 +225,7 @@ func DFS(ccid string, max_level uint64,
   if err != nil {
 	panic("Fail to get dependency for " + long_key1 + " at blk idx " + strconv.Itoa(int(blk_idx1)))
   }
-  level_stack1 := make([]int64,len(key_stack1)) 
+  level_stack1 := make([]uint64,len(key_stack1)) 
   
   for i := 0; i < len(level_stack1); i=i+1 {
     level_stack1[i] = 1
@@ -241,7 +241,7 @@ func DFS(ccid string, max_level uint64,
   if err != nil {
 	panic("Fail to get dependency for " + long_key2 + " at blk idx " + strconv.Itoa(int(blk_idx2)))
   }
-  level_stack2 := make([]int64,len(key_stack2)) 
+  level_stack2 := make([]uint64,len(key_stack2)) 
   for i := 0; i < len(level_stack2); i=i+1 {
     level_stack2[i] = 1
     key := key_stack2[i]
@@ -250,14 +250,21 @@ func DFS(ccid string, max_level uint64,
     wqu.Union(long_key2, node)
   }
 
+  var last_key1 string
+  var last_version1 string
+  var last_level1 uint64 
+
+  var last_key2 string
+  var last_version2 string
+  var last_level2 uint64 
 
   for len(key_stack1) > 0 || len(key_stack2) > 0 {
     if l1 := len(key_stack1); l1 > 0 {
-      last_key1, key_stack1 := key_stack1[l1-1], key_stack1[:l1-1]
-      last_version1, version_stack1 := version_stack1[l1-1], version_stack1[:l1-1]
-      last_level1, level_stack1 := level_stack1[l1-1], level_stack1[:l1-1]
+      last_key1, key_stack1 = key_stack1[l1-1], key_stack1[:l1-1]
+      last_version1, version_stack1 = version_stack1[l1-1], version_stack1[:l1-1]
+      last_level1, level_stack1 = level_stack1[l1-1], level_stack1[:l1-1]
       main_node := last_key1 + "_" + last_version1
-      if (last_level1 < int64(max_level)) {
+      if (last_level1 < uint64(max_level)) {
         cur_dep_keys1, cur_dep_versions1, prov_err := db.GetDBHandle().DB.GetDepsVersion(last_key1, last_version1)
         if prov_err != nil {
           panic("Fail to get provenance1 for " + last_key1 + " with version " + last_version1)
@@ -274,12 +281,12 @@ func DFS(ccid string, max_level uint64,
 
 
     if l2 := len(key_stack2); l2 > 0 {
-      last_key2, key_stack2 := key_stack2[l2-1], key_stack2[:l2-1]
-      last_version2, version_stack2 := version_stack2[l2-1], version_stack2[:l2-1]
-      last_level2, level_stack2 := level_stack2[l2-1], level_stack2[:l2-1]
+      last_key2, key_stack2 = key_stack2[l2-1], key_stack2[:l2-1]
+      last_version2, version_stack2 = version_stack2[l2-1], version_stack2[:l2-1]
+      last_level2, level_stack2 = level_stack2[l2-1], level_stack2[:l2-1]
       main_node := last_key2 + "_" + last_version2
       
-      if (last_level2 < int64(max_level)) {
+      if (last_level2 < uint64(max_level)) {
         cur_dep_keys2, cur_dep_versions2, prov_err := db.GetDBHandle().DB.GetDepsVersion(last_key2, last_version2)
         if prov_err != nil {
           panic("Fail to get provenance2 for " + last_key2 + " with version " + last_version2)
@@ -383,14 +390,12 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	if newBlockNumber == 1600 {
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 2)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 3)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 4)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 5)
-      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 6)
+	if newBlockNumber == 160 {
+      UnionFind_DFS("supplychain", 1, "Phone_0", uint64(newBlockNumber), "Phone_1", uint64(newBlockNumber))
+      for i := 1; i <= 6;i=i+1 {
+        UnionFind_DFS("supplychain", uint64(i), "Phone_0", uint64(newBlockNumber), "Phone_1", uint64(newBlockNumber))
+        //MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, i)
+      }
       panic("Stop here")
 	}
 
