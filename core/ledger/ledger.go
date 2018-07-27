@@ -173,7 +173,6 @@ func (ledger *Ledger) GetTXBatchPreviewBlockInfo(id interface{},
 
 
 func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
-	startTime := time.Now()
 	long_key := string(statemgmt.ConstructCompositeKey(ccid, key))
 	dep_keys, dep_versions, err := db.GetDBHandle().DB.GetDeps(long_key, blk_idx)
 	if err != nil {
@@ -183,6 +182,7 @@ func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
     total_duration := 0
 	
     for j := 0; j < MEASURE_TIMES;j++ {
+	    startTime := time.Now()
     	for i := 1; i < int(level); i++ {
     		// ledgerLogger.Infof("Level %d:  # of Deps Keys = %d and versions = %d", i, len(dep_keys), len(dep_versions))
     		var next_dep_keys []string
@@ -207,9 +207,99 @@ func MeasureBFSLevel(ccid, key string, blk_idx uint64, level uint64) {
   	    duration := uint64(time.Since(startTime))
         total_duration = total_duration + int(duration)
     }
-
 	long_key = long_key + " " + strconv.Itoa(int(blk_idx))
-	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, total_duration / MEASURE_TIMES) }
+	ledgerLogger.Infof("BFS Query with Level %d Duration for  %s is %d", level, long_key, total_duration / MEASURE_TIMES) 
+  }
+
+
+
+
+func DFS(ccid string, max_level uint64, 
+         key1 string, blk_idx1 uint64,
+         key2 string, blk_idx2 uint64) {
+  startTime := time.Now()
+  wqu := util.NewWeightedQuickUnion()
+
+  long_key1 := string(statemgmt.ConstructCompositeKey(ccid, key1))
+  key_stack1, version_stack1, err := db.GetDBHandle().DB.GetDeps(long_key1, blk_idx1)
+  if err != nil {
+	panic("Fail to get dependency for " + long_key1 + " at blk idx " + strconv.Itoa(int(blk_idx1)))
+  }
+  level_stack1 := make([]int64,len(key_stack1)) 
+  
+  for i := 0; i < len(level_stack1); i=i+1 {
+    level_stack1[i] = 1
+    key := key_stack1[i]
+    version := version_stack1[i]
+    node := key + "_" + version
+    wqu.Union(long_key1, node)
+  }
+
+
+  long_key2 := string(statemgmt.ConstructCompositeKey(ccid, key2))
+  key_stack2, version_stack2, err := db.GetDBHandle().DB.GetDeps(long_key2, blk_idx2)
+  if err != nil {
+	panic("Fail to get dependency for " + long_key2 + " at blk idx " + strconv.Itoa(int(blk_idx2)))
+  }
+  level_stack2 := make([]int64,len(key_stack2)) 
+  for i := 0; i < len(level_stack2); i=i+1 {
+    level_stack2[i] = 1
+    key := key_stack2[i]
+    version := version_stack2[i]
+    node := key + "_" + version
+    wqu.Union(long_key2, node)
+  }
+
+
+  for len(key_stack1) > 0 || len(key_stack2) > 0 {
+    if l1 := len(key_stack1); l1 > 0 {
+      last_key1, key_stack1 := key_stack1[l1-1], key_stack1[:l1-1]
+      last_version1, version_stack1 := version_stack1[l1-1], version_stack1[:l1-1]
+      last_level1, level_stack1 := level_stack1[l1-1], level_stack1[:l1-1]
+      main_node := last_key1 + "_" + last_version1
+      if (last_level1 < int64(max_level)) {
+        cur_dep_keys1, cur_dep_versions1, prov_err := db.GetDBHandle().DB.GetDepsVersion(last_key1, last_version1)
+        if prov_err != nil {
+          panic("Fail to get provenance1 for " + last_key1 + " with version " + last_version1)
+        }
+        key_stack1 = append(key_stack1, cur_dep_keys1...)
+        version_stack1 = append(version_stack1, cur_dep_versions1...)
+        for i := 0; i < len(cur_dep_keys1); i=i+1 {
+          level_stack1 = append(level_stack1, last_level1 + 1)
+          node := key_stack1[i] + "_" + version_stack1[i]
+          wqu.Union(main_node, node) 
+        }  // end for i
+      }  // end if
+    }  // end if l1 
+
+
+    if l2 := len(key_stack2); l2 > 0 {
+      last_key2, key_stack2 := key_stack2[l2-1], key_stack2[:l2-1]
+      last_version2, version_stack2 := version_stack2[l2-1], version_stack2[:l2-1]
+      last_level2, level_stack2 := level_stack2[l2-1], level_stack2[:l2-1]
+      main_node := last_key2 + "_" + last_version2
+      
+      if (last_level2 < int64(max_level)) {
+        cur_dep_keys2, cur_dep_versions2, prov_err := db.GetDBHandle().DB.GetDepsVersion(last_key2, last_version2)
+        if prov_err != nil {
+          panic("Fail to get provenance2 for " + last_key2 + " with version " + last_version2)
+        }
+        key_stack2 = append(key_stack2, cur_dep_keys2...)
+        version_stack2 = append(version_stack2, cur_dep_versions2...)
+        for i := 0; i < len(cur_dep_keys2); i=i+1 {
+          level_stack2 = append(level_stack2, last_level2 + 1)
+          node := key_stack2[i] + "_" + version_stack2[i]
+          wqu.Union(main_node, node) 
+        }  // end for i
+      }  // end if
+    }  // end if l2 
+  }  // end for
+  
+  connected := wqu.Connected(long_key1, long_key2) 
+  duration := uint64(time.Since(startTime))
+  ledgerLogger.Infof("Union Find (%s, %s) = %d, with Max Level %d and Duration %d", long_key1, long_key2, connected, max_level, duration)
+}
+
 
 // CommitTxBatch - gets invoked when the current transaction-batch needs to be committed
 // This function returns successfully iff the transactions details and state changes (that
