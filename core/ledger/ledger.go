@@ -440,9 +440,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 	if newBlockNumber == 160 {
+      MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
       for level := 1; level <= 6; level++ {
-        // MeasureBFSLevel("supplychain", "Product_0", newBlockNumber, uint64(level))
-        DFS_Unionfind("supplychain", uint64(level), "Phone_0", uint64(newBlockNumber), "Phone_1", uint64(newBlockNumber))
+        MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, uint64(level))
+        //DFS_Unionfind("supplychain", uint64(level), "Phone_0", uint64(newBlockNumber), "Phone_1", uint64(newBlockNumber))
       }
       panic("Stop here")
 	}
