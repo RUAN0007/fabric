@@ -390,7 +390,10 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
 
-	if newBlockNumber == 21100 {
+
+
+	// long_key := string(statemgmt.ConstructCompositeKey("supplychain", "Phone_1"))
+	if val,  _ := ledger.state.Get("supplychain", "Phone_1", true); string(val) != "" {
       MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
       for i := 1; i <= 6;i=i+1 {
         MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, uint64(i))
