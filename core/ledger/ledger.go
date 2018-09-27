@@ -439,7 +439,7 @@ func (ledger *Ledger) CommitTxBatch(id interface{}, transactions []*protos.Trans
 		ledgerLogger.Debugf("There were some erroneous transactions. We need to send a 'TX rejected' message here.")
 	}
 	ledgerLogger.Infof("Commited block %v, hash:%v", newBlockNumber, stateHash)
-	if newBlockNumber == 21100 {
+	if _, _, exists := GetHistoricalState("supplychain", "Phone_1", newBlockNumber);exists {
       MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, 1)
       for level := 1; level <= 6; level++ {
         MeasureBFSLevel("supplychain", "Phone_0", newBlockNumber, uint64(level))
